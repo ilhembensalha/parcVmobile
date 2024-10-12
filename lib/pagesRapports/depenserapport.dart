@@ -1,49 +1,41 @@
-import 'package:carhabty/pages/discovery.dart';
-import 'package:carhabty/pages/doughnut_charts_page.dart';
+import 'package:carhabty/ghraphedepense/MonthlyExpenseBarChart.dart';
+import 'package:carhabty/ghraphedepense/partyppe.dart';
+import 'package:carhabty/graphiqueCharts/doughnut_charts_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // Pour convertir les réponses JSON
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 
-class Generale extends StatefulWidget {
+class depense extends StatefulWidget {
   @override
-  _GeneraleState createState() => _GeneraleState();
+  _depenseState createState() => _depenseState();
 }
 
-class _GeneraleState extends State<Generale> {
+class _depenseState extends State<depense> {
   // Variables pour stocker les coûts récupérés
   var coutTotal;
   var coutmois;
   var coutAnnee;
-  var sumKilometrageThisMonth;
-  var sumKilometrageThisYear;
-  var distance;
-  var coutmaint;
-  var coutdepense;
-  var coutfuel;
+
     String? selectedOption;
 
   // Liste des options à afficher dans la liste déroulante
-  final List<String> options = ['Choisir', 'Répartition des Coûts total', 'Autre'];
+  final List<String> options = ['Dépenses Mensuelles par Mois', 'Coûts des Dépenses par Type'];
 
   // Méthode pour appeler l'API
   Future<void> fetchCoutData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? vehicleId = prefs.getInt('selectedVehicleId');
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/rapportcout/$vehicleId'));
+      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/rapportdepense/$vehicleId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
         setState(() {
-          coutTotal = data['coutTotal'];
+          coutTotal = data['totalDepense'];
           coutmois = data['coutTotalMois'];
           coutAnnee = data['coutTotalAnnee'];
-          coutmaint = data['totalEntretien'];
-          coutdepense= data['totalDepense'];
-          coutfuel= data['totalCarburant'];
         });
       } else {
         throw Exception('Erreur lors de la récupération des données');
@@ -53,33 +45,12 @@ class _GeneraleState extends State<Generale> {
     }
   }
 
-  Future<void> fetchDistanseData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? vehicleId = prefs.getInt('selectedVehicleId');
-    try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/rapportdistanse/$vehicleId'));
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-
-        setState(() {
-          distance = data['distance'];
-          sumKilometrageThisYear = data['sumKilometrageThisYear'];
-          sumKilometrageThisMonth = data['sumKilometrageThisMonth'];
-        });
-      } else {
-        throw Exception('Erreur lors de la récupération des données');
-      }
-    } catch (e) {
-      print('Erreur: $e');
-    }
-  }
 
   @override
   void initState() {
     super.initState();
     fetchCoutData();
-    fetchDistanseData();
   }
 
   @override
@@ -104,17 +75,7 @@ class _GeneraleState extends State<Generale> {
                     ],
                   ),
                   SizedBox(height: 40),
-                  Text('Distance', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildDistanceColumn('Total ', distance),
-                      _buildDistanceColumn('Ce Mois ', sumKilometrageThisMonth),
-                      _buildDistanceColumn('Cette Année ', sumKilometrageThisYear),
-                    ],
-                  ),
-                     SizedBox(height: 40),
+                 
                      Text('Graphiques', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                  
                   SizedBox(height: 20),
@@ -141,10 +102,16 @@ class _GeneraleState extends State<Generale> {
                   selectedOption = newValue;
                 });
                 // Naviguer vers une autre page si 'Répartition des Coûts total' est sélectionné
-                if (newValue == 'Répartition des Coûts total') {
+                if (newValue == 'Dépenses Mensuelles par Mois') {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => DoughnutChartsPage()),
+                    MaterialPageRoute(builder: (context) => MonthlyExpenseBarChart()),
+                  );
+                }
+                   if (newValue == 'Coûts des Dépenses par Type') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DepenseCostPieChart()),
                   );
                 }
               },
@@ -173,14 +140,6 @@ class _GeneraleState extends State<Generale> {
     );
   }
 
-  Column _buildDistanceColumn(String label, var value) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-        Text('${value ?? 0} KM', style: TextStyle(fontSize: 18)),
-      ],
-    );
-  }
+
 
 }
