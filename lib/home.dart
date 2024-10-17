@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:carhabty/ProfilePage.dart';
+import 'package:carhabty/TyoeDepense/depense.dart';
+import 'package:carhabty/TypeEntretien/entretien.dart';
 import 'package:carhabty/addCarburant.dart';
 import 'package:carhabty/addEntretien.dart';
 import 'package:carhabty/addRappel.dart';
-import 'package:carhabty/appdepenses.dart';
+import 'package:carhabty/adddepenses.dart';
 import 'package:carhabty/auth_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:carhabty/pages/tabbarRapport.dart';
@@ -65,8 +67,9 @@ class _SpincircleState extends State<Spincircle> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     
     // Supprime les données spécifiques de SharedPreferences (par exemple, l'ID utilisateur, token, etc.)
-    await prefs.clear(); // Ou utilise remove('clé') pour supprimer des clés spécifiques
-
+   await prefs.remove('token');// Ou utilise remove('clé') pour supprimer des clés spécifiques
+   await prefs.remove('userId');
+ 
     // Redirige vers la page de login
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -88,8 +91,43 @@ Discovery(),
     return Scaffold( 
        appBar: AppBar(
         title: Text('Carhabty'),
-        backgroundColor: Color.fromARGB(255, 0, 81, 255),
-        actions: <Widget>[
+         automaticallyImplyLeading: false,
+        backgroundColor: Color.fromARGB(255, 61, 90, 155),
+        actions: <Widget>[PopupMenuButton<String>(
+            icon: Icon(
+             Icons.settings, // Icône par défaut si aucune image n'est disponible
+            size: 24,
+           ),
+            onSelected: (value) {
+              if (value == 'Type Depense') {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => AfficherTypeDepensePage()));
+              } else if (value == 'Type Entretien') {
+               Navigator.push(context, MaterialPageRoute(builder: (context) => AfficherTypeEntretienPage()));
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                value: 'Type Depense',
+                child: Row(
+                  children: <Widget>[
+                    Icon(Icons.money_rounded),
+                    SizedBox(width: 10),
+                    Text('Type Depense'),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'Type Entretien',
+                child: Row(
+                  children: <Widget>[
+                    Icon(Icons.logout),
+                    SizedBox(width: 10),
+                    Text('Type Entretien'),
+                  ],
+                ),
+              ),
+            ],
+          ),
           // Menu déroulant avec l'image de profil
           PopupMenuButton<String>(
             icon: CircleAvatar(

@@ -5,7 +5,8 @@ import 'package:carhabty/EditCarburantPage.dart';
 import 'package:carhabty/EditDepensePage.dart';
 import 'package:carhabty/EditEntretienPage.dart';
 import 'package:carhabty/EditRappelPage.dart';
-import 'package:carhabty/RappelDetailPage.dart';
+import 'package:carhabty/DetailRappelPage.dart';
+import 'package:carhabty/QrCode.dart';
 import 'package:carhabty/models/Carburant.dart';
 import 'package:carhabty/models/Depense.dart';
 import 'package:carhabty/models/Entretien.dart';
@@ -173,6 +174,18 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                   ),
+                    IconButton(
+              icon: Icon(Icons.qr_code_scanner),
+              onPressed: () {
+                // Ouvre la page du scan QR code
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QRViewExample(), // Ta page de scan
+                  ),
+                );
+              },
+            ),
                   const SizedBox(height: 20),
                   // Affiche les détails du véhicule sélectionné
                   selectedVehicle == null

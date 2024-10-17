@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "708488505698",
+    "project_id": "gvmpdam",
+    "storage_bucket": "gvmpdam.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:708488505698:android:70106084e35b6149e8243b",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFIijHPDtzZFh6Av-Q-n7ynRD1jIot8LE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
