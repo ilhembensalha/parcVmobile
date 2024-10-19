@@ -62,7 +62,8 @@ class _SpincircleState extends State<Spincircle> {
   }
 
 
-    Future _logout() async {
+  
+  Future _logout() async {
     // Accède à SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     
@@ -75,7 +76,6 @@ class _SpincircleState extends State<Spincircle> {
       MaterialPageRoute(builder: (context) => LoginScreen()),
     );
   }
-
    int selectedIndex = 0;
 
   // Liste des pages que vous voulez afficher
@@ -168,7 +168,9 @@ Discovery(),
             ],
           ),
         ],
-      ), body: SpinCircleBottomBarHolder(
+      ),
+       drawer: SideMenu(), 
+       body: SpinCircleBottomBarHolder(
           bottomNavigationBar: SCBottomBarDetails(
             circleColors: [Colors.white, const Color.fromARGB(255, 0, 4, 255), Color.fromARGB(255, 82, 194, 255)],
             iconTheme: IconThemeData(color: Colors.black45),
@@ -246,5 +248,146 @@ Discovery(),
           child: pages[selectedIndex],
         ),
       );
+  }
+}
+class SideMenu extends StatefulWidget {
+  @override
+  _SideMenuState createState() => _SideMenuState();
+}
+
+class _SideMenuState extends State<SideMenu> {
+  bool _isExpanded = false;
+  String? _imageUrl;
+
+  Future<void> _logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    await prefs.remove('userId');
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => LoginScreen()), // À remplacer par votre écran de login
+    );
+  }
+
+  Future<void> _loadUserProfile() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt('userId'); // Récupérer l'ID utilisateur
+
+    if (userId != null) {
+      final response = await http.get(
+        Uri.parse('http://192.168.1.113:8000/api/user/$userId/profile'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          _imageUrl = data['avatar']; // URL de l'image récupérée
+        });
+      } else {
+        print('Erreur lors de la récupération de l\'image');
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      width: _isExpanded ? 200 : 70, // Largeur selon l'état
+      child: Drawer(
+        child: Column(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color.fromARGB(126, 2, 77, 138),
+                    const Color.fromARGB(82, 3, 100, 145),
+                  ],
+                
+                ),
+                
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AnimatedContainer(
+                    duration: Duration(milliseconds: 300), // Durée de l'animation
+                    width: _isExpanded ? 80 : 40, // Taille de l'image selon l'état
+                    height: _isExpanded ? 80 : 40, // Taille de l'image selon l'état
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundImage: _imageUrl != null
+                          ? NetworkImage(_imageUrl!)
+                          : AssetImage('assets/images/default_profile.png')
+                              as ImageProvider, // Image par défaut
+                    ),
+                  ),
+                  if (_isExpanded) ...[
+                   
+                  ],
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  SizedBox(height: 10),
+                  ListTile(
+                    leading: Icon(Icons.person, color: const Color.fromARGB(255, 1, 27, 48)),
+                    title: _isExpanded ? Text('Profil') : null,
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => Profile(),
+                      ));
+                    },
+                  ),
+                  Divider(),
+                  ListTile(
+                    leading: Icon(Icons.settings, color: const Color.fromARGB(255, 1, 27, 48)),
+                    title: _isExpanded ? Text('Type Entretien') : null,
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => AfficherTypeEntretienPage(),
+                      ));
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.money, color: const Color.fromARGB(255, 1, 27, 48)),
+                    title: _isExpanded ? Text('Type Dépense') : null,
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => AfficherTypeDepensePage(),
+                      ));
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.exit_to_app, color: const Color.fromARGB(255, 1, 27, 48)),
+              title: _isExpanded ? Text('Déconnexion') : null,
+              onTap: () => _logout(context),
+            ),
+            IconButton(
+              icon: Icon(_isExpanded ? Icons.arrow_back : Icons.arrow_forward),
+              onPressed: () {
+                setState(() {
+                  _isExpanded = !_isExpanded; // Inverser l'état
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

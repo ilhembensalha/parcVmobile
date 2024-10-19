@@ -1,3 +1,4 @@
+import 'package:carhabty/forgetPasword.dart';
 import 'package:flutter/material.dart';
 import 'package:carhabty/home.dart';
 import 'package:animate_do/animate_do.dart';
@@ -6,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'service/api_service.dart';
 import 'dart:convert'; // Pour convertir le mot de passe en bytes
 import 'package:crypto/crypto.dart'; // Pour le hachage
+import 'package:encrypt/encrypt.dart' as encrypt; // Utiliser un alias pour 'encrypt'
+
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -46,6 +49,54 @@ class _LoginScreenState extends State<LoginScreen> {
       _hasSavedCredentials = email != null && password != null;
     });
   }
+  //password crypté
+
+
+Future<void> storeEncryptedPassword(String password) async {
+  final prefs = await SharedPreferences.getInstance();
+  final key = "Your16CharacterK"; // Clé de 16 caractères
+
+  // Chiffrement du mot de passe
+  encrypt.Encrypted encryptedPassword = encryptPassword(key, password);
+
+  // Stocker le mot de passe chiffré (Base64) dans SharedPreferences
+  await prefs.setString('password', encryptedPassword.base64);
+}
+
+Future<String> getDecryptedPassword() async {
+  final prefs = await SharedPreferences.getInstance();
+  final key = "Your16CharacterK"; // Clé de 16 caractères
+
+  // Récupérer le mot de passe chiffré
+  String? encryptedPasswordBase64 = prefs.getString('password');
+
+  if (encryptedPasswordBase64 != null && encryptedPasswordBase64.isNotEmpty) {
+    // Convertir la chaîne Base64 en objet Encrypted
+    final encryptedPassword = encrypt.Encrypted.fromBase64(encryptedPasswordBase64);
+
+    // Déchiffrement du mot de passe
+    String decryptedPassword = decryptPassword(key, encryptedPassword);
+    return decryptedPassword;
+  }
+
+  return ''; // Retourne une chaîne vide si aucun mot de passe n'est trouvé
+}
+
+String decryptPassword(String keyString, encrypt.Encrypted encryptedData) {
+  final key = encrypt.Key.fromUtf8(keyString); // Utiliser 'encrypt.Key'
+  final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+  final initVector = encrypt.IV.fromUtf8(keyString.substring(0, 16));
+  return encrypter.decrypt(encryptedData, iv: initVector);
+}
+
+encrypt.Encrypted encryptPassword(String keyString, String plainText) {
+  final key = encrypt.Key.fromUtf8(keyString); // Utiliser 'encrypt.Key'
+  final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+  final initVector = encrypt.IV.fromUtf8(keyString.substring(0, 16));
+  return encrypter.encrypt(plainText, iv: initVector);
+}
+
+
 
   // Méthode pour vérifier l'empreinte digitale et auto-remplir les identifiants
   Future<void> _authenticateWithBiometrics() async {
@@ -63,9 +114,12 @@ class _LoginScreenState extends State<LoginScreen> {
         // Charger les identifiants sauvegardés
         SharedPreferences prefs = await SharedPreferences.getInstance();
           try {
+    String decryptedPassword = await getDecryptedPassword();
     final token = await _apiService.login(
         prefs.getString('email') ?? '',
-        prefs.getString('password') ?? '',
+        //prefs.getString('password') ?? '',
+         decryptedPassword,
+      
     );
     if (token != null) {
       // Sauvegarde des identifiants dans les SharedPreferences
@@ -107,12 +161,13 @@ void _login() async {
       _emailController.text,
       _passwordController.text,
     );
+     
     if (token != null) {
       // Sauvegarde des identifiants dans les SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('email', _emailController.text);
-      await prefs.setString('password', _passwordController.text);
-
+     // await prefs.setString('password', _passwordController.text);
+     await storeEncryptedPassword(_passwordController.text);
       // Vérifier si c'est la première connexion
       bool isFirstLogin = prefs.getBool('isFirstLogin') ?? true;
       print(isFirstLogin);
@@ -285,8 +340,6 @@ void _showFingerprintDialog() {
                     ),
                     const SizedBox(height: 20),
                     // Affiche le bouton Login with fingerprint uniquement si des identifiants sont enregistrés
-                   
-                    const SizedBox(height: 30),
                      if (_canCheckBiometrics && _hasSavedCredentials)
                   FadeInUp(
   duration: const Duration(milliseconds: 1900),
@@ -328,7 +381,28 @@ void _showFingerprintDialog() {
     ),
   ),
 ),
-
+  const SizedBox(height: 20),
+            FadeInUp(
+              duration: const Duration(milliseconds: 2000),
+              child: GestureDetector(
+                onTap: () {
+                  // Naviguer vers la page de mot de passe oublié
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ForgotPasswordPage(), // Remplacez avec votre page de mot de passe oublié
+                    ),
+                  );
+                },
+                child: const Text(
+                  "Forgot Password?",
+                  style: TextStyle(
+                    color: Color.fromRGBO(143, 148, 251, 1),
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
                   ],
                 ),
               ),
