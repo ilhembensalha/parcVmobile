@@ -8,6 +8,8 @@ import 'package:carhabty/addEntretien.dart';
 import 'package:carhabty/addRappel.dart';
 import 'package:carhabty/adddepenses.dart';
 import 'package:carhabty/auth_screens.dart';
+import 'package:carhabty/maps/maps.dart';
+import 'package:carhabty/vehicule/vehicule.dart';
 import 'package:flutter/material.dart';
 import 'package:carhabty/pages/tabbarRapport.dart';
 import 'package:carhabty/pages/discovery.dart';
@@ -83,53 +85,24 @@ class _SpincircleState extends State<Spincircle> {
     Home(), // Page Home
     Add(),  // Page Add
 Message(),
-Profile(),
+MapsPage(),
 Discovery(),
   ];
   @override
   Widget build(BuildContext context) {
     return Scaffold( 
        appBar: AppBar(
-        title: Text('Carhabty'),
+        title: Text('Carhabty', style: TextStyle(
+    color: Colors.white,
+    fontSize: 20, // Vous pouvez ajuster la taille du texte
+    fontWeight: FontWeight.bold, // Ajout d'épaisseur au texte (optionnel)
+  ),),
          automaticallyImplyLeading: false,
-        backgroundColor: Color.fromARGB(255, 61, 90, 155),
-        actions: <Widget>[PopupMenuButton<String>(
-            icon: Icon(
-             Icons.settings, // Icône par défaut si aucune image n'est disponible
-            size: 24,
-           ),
-            onSelected: (value) {
-              if (value == 'Type Depense') {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => AfficherTypeDepensePage()));
-              } else if (value == 'Type Entretien') {
-               Navigator.push(context, MaterialPageRoute(builder: (context) => AfficherTypeEntretienPage()));
-              }
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'Type Depense',
-                child: Row(
-                  children: <Widget>[
-                    Icon(Icons.money_rounded),
-                    SizedBox(width: 10),
-                    Text('Type Depense'),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'Type Entretien',
-                child: Row(
-                  children: <Widget>[
-                    Icon(Icons.logout),
-                    SizedBox(width: 10),
-                    Text('Type Entretien'),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        backgroundColor:  Color.fromRGBO(52, 138, 199, .6),
+        actions: <Widget>[
           // Menu déroulant avec l'image de profil
           PopupMenuButton<String>(
+            
             icon: CircleAvatar(
               radius: 20,
               backgroundImage: _imageUrl != null
@@ -168,13 +141,24 @@ Discovery(),
             ],
           ),
         ],
+       leading: Builder(
+        builder: (BuildContext context) {
+          return IconButton(
+            icon: Icon(Icons.menu), 
+             color: Colors.white,// Icône pour le menu
+            onPressed: () {
+              Scaffold.of(context).openDrawer(); // Ouvre le Drawer
+            },
+          );
+        },
       ),
+    ),
        drawer: SideMenu(), 
        body: SpinCircleBottomBarHolder(
           bottomNavigationBar: SCBottomBarDetails(
-            circleColors: [Colors.white, const Color.fromARGB(255, 0, 4, 255), Color.fromARGB(255, 82, 194, 255)],
+            circleColors: [Colors.white, Color.fromRGBO(52, 138, 199, .6), Color.fromARGB(255, 82, 194, 255)],
             iconTheme: IconThemeData(color: Colors.black45),
-            activeIconTheme: IconThemeData(color: const Color.fromARGB(255, 8, 0, 255)),
+            activeIconTheme: IconThemeData(color:   Color.fromRGBO(52, 138, 199, .6)),
             backgroundColor: Colors.white,
             titleStyle: TextStyle(color: Colors.black45,fontSize: 12),
             activeTitleStyle: TextStyle(color: Colors.black,fontSize: 12,fontWeight: FontWeight.bold),
@@ -203,7 +187,7 @@ Discovery(),
                 selectedIndex = 2; // Sélectionne la page "Add"
               });
               }),
-              SCBottomBarItem(icon: Icons.reorder, title: "Plus", onPressed: () {
+              SCBottomBarItem(icon: Icons.map, title: "maps", onPressed: () {
                  setState(() {
                 selectedIndex = 3; // Sélectionne la page "Add"
               });
@@ -257,7 +241,7 @@ class SideMenu extends StatefulWidget {
 
 class _SideMenuState extends State<SideMenu> {
   bool _isExpanded = false;
-  String? _imageUrl;
+  int? vehiculeId = null;
 
   Future<void> _logout(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -265,127 +249,104 @@ class _SideMenuState extends State<SideMenu> {
     await prefs.remove('userId');
 
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => LoginScreen()), // À remplacer par votre écran de login
+      MaterialPageRoute(builder: (context) => LoginScreen()),
     );
   }
 
-  Future<void> _loadUserProfile() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? userId = prefs.getInt('userId'); // Récupérer l'ID utilisateur
-
-    if (userId != null) {
-      final response = await http.get(
-        Uri.parse('http://192.168.1.113:8000/api/user/$userId/profile'),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          _imageUrl = data['avatar']; // URL de l'image récupérée
-        });
-      } else {
-        print('Erreur lors de la récupération de l\'image');
-      }
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserProfile();
-  }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
-      width: _isExpanded ? 200 : 70, // Largeur selon l'état
+      width: _isExpanded ? 200 : 70,
       child: Drawer(
-        child: Column(
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color.fromARGB(126, 2, 77, 138),
-                    const Color.fromARGB(82, 3, 100, 145),
-                  ],
-                
-                ),
-                
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AnimatedContainer(
-                    duration: Duration(milliseconds: 300), // Durée de l'animation
-                    width: _isExpanded ? 80 : 40, // Taille de l'image selon l'état
-                    height: _isExpanded ? 80 : 40, // Taille de l'image selon l'état
-                    child: CircleAvatar(
-                      radius: 40,
-                      backgroundImage: _imageUrl != null
-                          ? NetworkImage(_imageUrl!)
-                          : AssetImage('assets/images/default_profile.png')
-                              as ImageProvider, // Image par défaut
+        child: Container(
+        color:  Color.fromRGBO(52, 138, 199, .6),// Couleur de fond personnalisée
+          child: Column(
+            children: [
+              // DrawerHeader ici si vous le souhaitez
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: <Widget>[
+                    SizedBox(height: 30),
+                    ListTile(
+                      leading: Icon(Icons.person, color: Colors.white,),
+                      title: _isExpanded ? Text('Profil', style: TextStyle(
+    color: Colors.white,
+
+  ),) : null,
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => ProfilePage(),
+                        ));
+                      },
                     ),
-                  ),
-                  if (_isExpanded) ...[
-                   
+                    SizedBox(height: 10),
+                    ListTile(
+                      leading: Icon(Icons.car_crash,  color: Colors.white,),
+                      title: _isExpanded ? Text('Vehicule', style: TextStyle(
+    color: Colors.white,
+
+  ),) : null,
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => EditVehiculePage(),
+                        ));
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    Divider(),
+                    SizedBox(height: 10),
+                    ListTile(
+                      leading: Icon(Icons.settings,  color: Colors.white,),
+                      title: _isExpanded ? Text('Type Entretien', style: TextStyle(
+    color: Colors.white,
+
+  ),) : null,
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => AfficherTypeEntretienPage(),
+                        ));
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    ListTile(
+                      leading: Icon(Icons.money,  color: Colors.white,),
+                      title: _isExpanded ? Text('Type Dépense', style: TextStyle(
+    color: Colors.white,
+
+  ),) : null,
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => AfficherTypeDepensePage(),
+                        ));
+                      },
+                    ),
                   ],
-                ],
+                ),
               ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: <Widget>[
-                  SizedBox(height: 10),
-                  ListTile(
-                    leading: Icon(Icons.person, color: const Color.fromARGB(255, 1, 27, 48)),
-                    title: _isExpanded ? Text('Profil') : null,
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => Profile(),
-                      ));
-                    },
-                  ),
-                  Divider(),
-                  ListTile(
-                    leading: Icon(Icons.settings, color: const Color.fromARGB(255, 1, 27, 48)),
-                    title: _isExpanded ? Text('Type Entretien') : null,
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => AfficherTypeEntretienPage(),
-                      ));
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.money, color: const Color.fromARGB(255, 1, 27, 48)),
-                    title: _isExpanded ? Text('Type Dépense') : null,
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => AfficherTypeDepensePage(),
-                      ));
-                    },
-                  ),
-                ],
+              Divider(),
+              SizedBox(height: 10),
+              ListTile(
+                leading: Icon(Icons.exit_to_app,  color: Colors.white,),
+                title: _isExpanded ? Text('Déconnexion', style: TextStyle(
+    color: Colors.white,
+
+  ),) : null,
+                onTap: () => _logout(context),
               ),
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.exit_to_app, color: const Color.fromARGB(255, 1, 27, 48)),
-              title: _isExpanded ? Text('Déconnexion') : null,
-              onTap: () => _logout(context),
-            ),
-            IconButton(
-              icon: Icon(_isExpanded ? Icons.arrow_back : Icons.arrow_forward),
-              onPressed: () {
-                setState(() {
-                  _isExpanded = !_isExpanded; // Inverser l'état
-                });
-              },
-            ),
-          ],
+              IconButton(
+                icon: Icon(_isExpanded ? Icons.arrow_back : Icons.arrow_forward, color: Colors.white,),
+                onPressed: () {
+                  setState(() {
+                    _isExpanded = !_isExpanded;
+                  });
+                },
+              ),
+              SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
     );

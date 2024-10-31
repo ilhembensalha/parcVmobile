@@ -3,19 +3,19 @@ import 'package:carhabty/models/Depense.dart';
 import 'package:carhabty/models/Entretien.dart';
 
 class Vehicule {
-  final int id;
-  final String nomV;
-  final String marque;
-  final String modele;
-  final String type;
-  final String status;
-  final String immatriculation;
-  final String? vin;
-  final String? kilometrage;
-  final String datePc;
-  final List<Entretien> fuel;
-  final List<Depense> expenses;
-  final List<Carburant> maintenance;
+   int id;
+   String nomV;
+   String marque;
+   String modele;
+   String type;
+   String status;
+   String immatriculation;
+   String? vin;
+   String? kilometrage;
+   String datePc;
+   List<Entretien> fuel;
+   List<Depense> expenses;
+   List<Carburant> maintenance;
 
   Vehicule({
     required this.id,
@@ -33,6 +33,17 @@ class Vehicule {
     required this.maintenance,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+     'nomV': nomV,
+    'marque': marque,
+    'modele': modele,
+    'type': type,
+    'immatriculation': immatriculation,
+    'kilometrage': kilometrage,
+    'datePc': datePc,
+    };
+  }
   factory Vehicule.fromJson(Map<String, dynamic> json) {
     return Vehicule(
       id: json['id'] ?? 0,

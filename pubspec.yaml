@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: 1.2.1
+  http: ^0.13.5
   shared_preferences: ^2.0.15
   dropdown_search: ^5.0.2
   charts_flutter_new : 0.12.0
@@ -55,12 +55,14 @@ dependencies:
   mobile_scanner: ^2.0.0
   local_auth: ^2.1.0
   crypto: ^3.0.1 
-  encrypt: ^5.0.1  
+  encrypt: ^5.0.1
+  flutter_map: ^4.0.0  # Assurez-vous d'utiliser la dernière version
+  latlong2: ^0.8.1
 
 flutter_native_splash:
   android: true
   
-  color: "#42a5f5"
+  color: "#FFFFFF"
   image: "assets/icon/app_icon.png"
 
 
@@ -80,9 +82,10 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/icon/app_icon.png" # Chemin de l'image de l'icône
+  image_path: "assets/icon/app_icon2.png" # Chemin de l'image de l'icône
   adaptive_icon_background: "#FFFFFF"    # Couleur de fond pour Android (facultatif)
-  adaptive_icon_foreground: "assets/icon/app_icon.png" 
+  adaptive_icon_foreground: "assets/icon/app_icon2.png" 
+  
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

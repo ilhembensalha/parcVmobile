@@ -217,8 +217,32 @@ class _HomeState extends State<Home> {
         final maintenance = sortByDate(data['maintenance'] as List<Entretien>);
         final rappels = sortByDate(data['rappel'] as List<Rappel>);
         
-        // Combiner toutes les données pertinentes en une seule liste
-        final allEvents = [...expenses, ...fuel, ...maintenance, ...rappels];
+       
+
+List<dynamic> allEvents = [...expenses, ...fuel, ...maintenance, ...rappels];
+
+// Trier la liste combinée par date
+allEvents.sort((a, b) {
+  // Récupérer et convertir la date
+  DateTime dateA = (a is Depense) ? DateTime.parse(a.date) :
+                   (a is Carburant) ? DateTime.parse(a.date) :
+                   (a is Entretien) ? DateTime.parse(a.date) :
+                   (a is Rappel) ? DateTime.parse(a.date) : DateTime.now(); // Valeur par défaut
+
+  DateTime dateB = (b is Depense) ? DateTime.parse(b.date) :
+                   (b is Carburant) ? DateTime.parse(b.date) :
+                   (b is Entretien) ? DateTime.parse(b.date) :
+                   (b is Rappel) ? DateTime.parse(b.date) : DateTime.now(); // Valeur par défaut
+
+   return dateB.compareTo(dateA);
+});
+
+// Maintenant, `allEvents` est trié par date
+
+// Maintenant, `allEvents` est trié par date
+
+
+// Maintenant, `allEvents` est trié par date
         
         if (allEvents.isEmpty) {
           return const Center(child: Text('Aucun événement disponible.'));

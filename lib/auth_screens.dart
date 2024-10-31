@@ -245,7 +245,7 @@ void _showFingerprintDialog() {
                       child: FadeInUp(
                         duration: const Duration(milliseconds: 1600),
                         child: Container(
-                          margin: const EdgeInsets.only(top: 50),
+                          margin: const EdgeInsets.only(bottom: 50),
                           child: const Center(
                             child: Text(
                               "Login", 
@@ -321,10 +321,18 @@ void _showFingerprintDialog() {
                             borderRadius: BorderRadius.circular(10),
                             gradient: const LinearGradient(
                               colors: [
-                                Color.fromRGBO(143, 148, 251, 1),
-                                Color.fromRGBO(143, 148, 251, .6),
+                               Color.fromRGBO(52, 138, 199, 1),
+                              Color.fromRGBO(52, 138, 199, .6),
                               ],
                             ),
+                             boxShadow: [
+          BoxShadow(
+            color: Colors.blueAccent.withOpacity(0.3),
+            spreadRadius: 5,
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
                           ),
                           child: const Center(
                             child: Text(
@@ -397,7 +405,7 @@ void _showFingerprintDialog() {
                 child: const Text(
                   "Forgot Password?",
                   style: TextStyle(
-                    color: Color.fromRGBO(143, 148, 251, 1),
+                    color:  Color.fromRGBO(52, 138, 199, .6),
                     fontSize: 16,
                   ),
                 ),

@@ -72,6 +72,7 @@ Future<void> _loadRappelDetails() async {
 
     // Accéder à l'objet 'rappel' dans la réponse
     final rappel = data['rappel'];
+    print(rappel);
 
     setState(() {
       // Vérifiez que les données sont disponibles avant de les attribuer aux contrôleurs et variables
@@ -80,15 +81,20 @@ Future<void> _loadRappelDetails() async {
       _kilometrageController.text = rappel['kilometrage'] != null ? rappel['kilometrage'].toString() : ''; 
       
       // Déterminez si le type est "Entretien" ou "Dépense" et mettez à jour la sélection
-      _selectedOption = rappel['type'] ?? 'Dépense';
+      _selectedOption = rappel['type'] ;
       
-      if (_selectedOption == 'Entretien') {
+      if (_selectedOption == 'entretien') {
         _selectedTypeentretien = rappel['typeEntretien']?.toString();
         _selectedTypeDepense = null; // Réinitialise typeDepense si non applicable
-      } else if (_selectedOption == 'Dépense') {
+      } else if (_selectedOption == 'depense') {
         _selectedTypeDepense = rappel['typeDepense']?.toString();
         _selectedTypeentretien = null; // Réinitialise typeEntretien si non applicable
       }
+        print(_selectedOption);
+          print(rappel['typeDepense']);
+            print(rappel['typeEntretien']);
+      print(_selectedTypeentretien);
+      print(_selectedTypeDepense);
 
       // Met à jour les valeurs des checkboxes en fonction des données reçues
       _isDateChecked = rappel['date'] != null;
@@ -129,6 +135,8 @@ Future<void> _loadRappelDetails() async {
 
       request.fields['remarque'] = _remarqueController.text;
       request.fields['type'] = _selectedOption;
+      print(_selectedOption);
+      print(_selectedTypeentretien);
 
       if (_isDateChecked) {
         request.fields['date'] = _dateController.text;
@@ -137,11 +145,11 @@ Future<void> _loadRappelDetails() async {
         request.fields['kilometrage'] = _kilometrageController.text;
       }
 
-      if (_selectedTypeentretien != null && _selectedOption == 'Entretien') {
+      if (_selectedTypeentretien != null && _selectedOption == 'entretien') {
         request.fields['typeEntretien'] = _selectedTypeentretien!;
          request.fields['typeDepense'] = "";
       }
-      if (_selectedTypeDepense != null && _selectedOption == 'Dépense') {
+      if (_selectedTypeDepense != null && _selectedOption == 'depense') {
         request.fields['typeDepense'] = _selectedTypeDepense!;
         request.fields['typeEntretien'] = "";
       }
@@ -178,29 +186,29 @@ Future<void> _loadRappelDetails() async {
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _selectedOption = 'Dépense';
+                        _selectedOption = 'depense';
                       });
                     },
                     child: Text('Dépense'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _selectedOption == 'Dépense' ? Colors.blue : Colors.grey,
+                      backgroundColor: _selectedOption == 'depense' ? Colors.blue : Colors.grey,
                     ),
                   ),
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _selectedOption = 'Entretien';
+                        _selectedOption = 'entretien';
                       });
                     },
                     child: Text('Entretien'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _selectedOption == 'Entretien' ? Colors.blue : Colors.grey,
+                      backgroundColor: _selectedOption == 'entretien' ? Colors.blue : Colors.grey,
                     ),
                   ),
                 ],
               ),
               SizedBox(height: 20),
-              if (_selectedOption == 'Dépense')
+              if (_selectedOption == 'depense')
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(labelText: 'Type de Dépense'),
                   value: _selectedTypeDepense,
@@ -222,7 +230,7 @@ Future<void> _loadRappelDetails() async {
                     return null;
                   },
                 ),
-              if (_selectedOption == 'Entretien')
+              if (_selectedOption == 'entretien')
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(labelText: 'Type de Entretien'),
                   value: _selectedTypeentretien,
