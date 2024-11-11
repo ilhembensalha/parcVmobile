@@ -48,7 +48,7 @@ class _MapsPageState extends State<MapsPage> {
 
   Future<void> _fetchAddress(double latitude, double longitude) async {
     final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json');
+       'https://nominatim.openstreetmap.org/reverse?lat=$latitude&lon=$longitude&format=json&accept-language=fr');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
