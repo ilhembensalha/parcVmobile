@@ -1,3 +1,4 @@
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:http/http.dart' as http;
@@ -17,9 +18,11 @@ class _BarChartPageState extends State<BarChartPage> {
   Future<void> fetchCoutData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? vehicleId = prefs.getInt('selectedVehicleId');
-
+final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/rapportbarchartsmois/$vehicleId'));
+      final response = await http.get(Uri.parse('$url/rapportbarchartsmois/$vehicleId'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String baseUrl = 'http://192.168.1.113:8000/api'; // Update with your API base URL
+  final String baseUrl = 'http://192.168.1.17:8000/api'; // Update with your API base URL
   
 
 

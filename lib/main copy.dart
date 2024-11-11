@@ -1,4 +1,3 @@
-import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:carhabty/home.dart'; // Page après la connexion.
 import 'auth_screens.dart'; // Écran de connexion.
@@ -35,18 +34,19 @@ void showNotification(String title, String body) async {
       0, title, body, platformChannelSpecifics);
 }
 
-
-
-
-
 Future<void> checkRappels() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-    final ApiService _apiService = ApiService();
-      final url= _apiService.baseUrl;
-      print(url);
+  int? vehicleId = prefs.getInt('selectedVehicleId');
+
+  // Vérifiez si vehicleId n'est pas nul avant de continuer
+  if (vehicleId == null) {
+    print('Aucun véhicule sélectionné');
+    return; // Sortir de la fonction si aucun véhicule n'est sélectionné
+  }
+
   // Appel à l'API pour récupérer les rappels d'un véhicule spécifique
   final response = await http.get(
-    Uri.parse('$url/rappels'),
+    Uri.parse('http://192.168.1.113:8000/api/rappels/$vehicleId'),
   );
 
   if (response.statusCode == 200) {
@@ -54,31 +54,20 @@ Future<void> checkRappels() async {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     print('Rappels récupérés : ${response.body}');
 
+    bool notificationSent = false; // Pour vérifier si une notification a été envoyée
+
     // Parcourt les rappels pour vérifier si la date correspond à aujourd'hui
     for (var rappel in rappels) {
       if (rappel['date'] == today) {
-        String message;
-        
-        // Vérifier le type et formater le message en conséquence
-        if (rappel['type'] == 'entretien') {
-          message = 'Vous avez un entretien de ${rappel['type_entretien_name'] ?? 'N/A'}.';
-        } else if (rappel['type'] == 'depense') {
-          message = 'Vous avez une dépense de ${rappel['typeEntretien_name'] ?? 'N/A'}.';
-        } else {
-          message = 'Rappel inconnu.';
+        if (!notificationSent) {
+          showNotification('Rappel de véhicule', 'Vérifiez le rappel ou le kilométrage de votre véhicule.');
+          print('Notification envoyée pour le rappel: ${rappel['date']}');
+          notificationSent = true; // Mettez à jour pour éviter d'envoyer plusieurs notifications
         }
-
-        // Envoyer la notification avec le message formaté
-        showNotification(
-          'Rappel de véhicule ${rappel['vehicule']?? 'N/A'}',
-          message,
-        );
-        print('Notification envoyée pour le rappel: ${rappel['date']}');
       }
     }
 
-    // Si aucune notification n'a été envoyée, afficher un message dans la console
-    if (rappels.where((rappel) => rappel['date'] == today).isEmpty) {
+    if (!notificationSent) {
       print('Aucun rappel à notifier pour aujourd\'hui.');
     }
   } else {
@@ -86,17 +75,34 @@ Future<void> checkRappels() async {
   }
 }
 
-
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     print("Tâche en arrière-plan : $task"); // Pour le debug
+
     // Exécute la vérification des rappels
     await checkRappels();
       print('hello ...');
-     return Future.value(true);
+
+    return Future.value(true);
   });
 }
                              
+// Fonction pour planifier les rappels
+void scheduleReminder() async {
+  await Workmanager().registerPeriodicTask(
+    "checkRappelsTask", // Un identifiant unique pour la tâche
+    "checkRappels", // Nom de la tâche
+    frequency: const Duration(days: 1), // Intervalle minimum 15 minutes avec WorkManager
+    initialDelay: const Duration(seconds: 5), // Démarrer après 5 secondes
+    inputData: {}, // Données en entrée si nécessaire
+    constraints: Constraints(
+      networkType: NetworkType.connected, // Peut être configuré pour limiter à certains cas
+      requiresBatteryNotLow: false, // Peut être configuré selon les besoins
+      requiresCharging: false,
+    ),
+  );
+}
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -108,8 +114,6 @@ Future<void> main() async {
   );
 
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-
-  
   await AndroidAlarmManager.initialize(); // Initialise l'Alarm Manager
 
   await Firebase.initializeApp(); // Initialiser Firebase
@@ -141,7 +145,9 @@ Future<void> main() async {
 
 
   await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-  Workmanager().registerPeriodicTask("checkRappels", "checkRappels",frequency: Duration(minutes: 60));
+
+  // Planifier la tâche récurrente toutes les 15 minutes
+  scheduleReminder();
   
   runApp(MyApp());
 }

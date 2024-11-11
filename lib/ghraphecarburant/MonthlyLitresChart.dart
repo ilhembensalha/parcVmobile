@@ -23,7 +23,7 @@ class _MonthlyLitresChartState extends State<MonthlyLitresChart> {
     int? vehicleId = prefs.getInt('selectedVehicleId');
 
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/graphlitre/$vehicleId'));
+      final response = await http.get(Uri.parse('http://192.168.1.17:8000/api/graphlitre/$vehicleId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

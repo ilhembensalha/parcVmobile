@@ -9,17 +9,21 @@ import 'package:carhabty/addRappel.dart';
 import 'package:carhabty/adddepenses.dart';
 import 'package:carhabty/auth_screens.dart';
 import 'package:carhabty/maps/maps.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:carhabty/vehicule/vehicule.dart';
 import 'package:flutter/material.dart';
 import 'package:carhabty/pages/tabbarRapport.dart';
-import 'package:carhabty/pages/discovery.dart';
 import 'package:carhabty/pages/home.dart';
 import 'package:carhabty/pages/message.dart';
-import 'package:carhabty/pages/profile.dart';
 import 'package:spincircle_bottom_bar/modals.dart';
 import 'package:spincircle_bottom_bar/spincircle_bottom_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:excel/excel.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:permission_handler/permission_handler.dart';
 
 
 
@@ -44,11 +48,13 @@ class _SpincircleState extends State<Spincircle> {
     Future<void> _loadUserProfile() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? userId = prefs.getInt('userId'); // Récupérer l'ID utilisateur
-
+  final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     if (userId != null) {
       // Effectuer une requête HTTP pour obtenir l'URL de l'image
       final response = await http.get(
-        Uri.parse('http://192.168.1.113:8000/api/user/$userId/profile'),
+        Uri.parse('$url/user/$userId/profile'),
       );
 
       if (response.statusCode == 200) {
@@ -86,7 +92,6 @@ class _SpincircleState extends State<Spincircle> {
     Add(),  // Page Add
 Message(),
 MapsPage(),
-Discovery(),
   ];
   @override
   Widget build(BuildContext context) {
@@ -234,6 +239,8 @@ Discovery(),
       );
   }
 }
+
+
 class SideMenu extends StatefulWidget {
   @override
   _SideMenuState createState() => _SideMenuState();
@@ -242,6 +249,10 @@ class SideMenu extends StatefulWidget {
 class _SideMenuState extends State<SideMenu> {
   bool _isExpanded = false;
   int? vehiculeId = null;
+
+    Future<void> requestPermissions() async {
+    await Permission.storage.request();
+  }
 
   Future<void> _logout(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -253,6 +264,110 @@ class _SideMenuState extends State<SideMenu> {
     );
   }
 
+Future<Map<String, dynamic>?> fetchVehicleData() async {
+  final prefs = await SharedPreferences.getInstance();
+  final vehicleId = prefs.getInt('selectedVehicleId');
+
+  if (vehicleId == null) return null;
+  final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+  final response = await http.get(
+    
+    Uri.parse("$url/vehicule/$vehicleId")
+   
+  );
+
+  if (response.statusCode == 200) {
+      print("la récupération des données succses: ${response.statusCode}");
+    return json.decode(response.body);
+  } else {
+    print("Erreur lors de la récupération des données : ${response.statusCode}");
+    return null;
+  }
+}
+
+
+
+Future<void> generatePdf() async {
+  print('pdf');
+  await requestPermissions();  // Demande de permissions
+  
+  final pdf = pw.Document();
+  final vehiculeData = await fetchVehicleData();
+
+  if (vehiculeData != null) {
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            children: [
+              pw.Text("Rapport pour le véhicule ID: ${vehiculeData['id']}"),
+              pw.SizedBox(height: 20),
+              pw.Text("Dépenses:"),
+              for (var depense in vehiculeData['depense'])
+                pw.Text("- ${depense['remarque']}: ${depense['montant']}"),
+              pw.SizedBox(height: 10),
+              pw.Text("Carburant:"),
+              for (var carburant in vehiculeData['carburant'])
+                pw.Text("- ${carburant['remarque']}: ${carburant['montant']}"),
+              pw.SizedBox(height: 10),
+              pw.Text("Entretien:"),
+              for (var entretien in vehiculeData['entretien'])
+                pw.Text("- ${entretien['remarque']}: ${entretien['montant']}"),
+              pw.SizedBox(height: 10),
+              pw.Text("Rappels:"),
+              for (var rappel in vehiculeData['rappel'])
+                pw.Text("- ${rappel['type']}"),
+            ],
+          );
+        },
+      ),
+    );
+
+    final output = await getExternalStorageDirectory();
+    final file = File("${output!.path}/rapport_vehicule_${vehiculeData['id']}.pdf");
+    await file.writeAsBytes(await pdf.save());
+
+    print("PDF saved at: ${file.path}");
+  }
+}
+
+Future<void> generateExcel() async {
+  print('excel');
+  await requestPermissions();  // Demande de permissions
+  
+  final vehiculeData = await fetchVehicleData();
+
+  if (vehiculeData != null) {
+    var excel = Excel.createExcel();
+    Sheet sheetObject = excel['Rapport_${vehiculeData['id']}'];
+
+    sheetObject.appendRow(["Section", "Données"]);
+    sheetObject.appendRow(["Dépenses"]);
+    for (var depense in vehiculeData['depense']) {
+      sheetObject.appendRow(["", "${depense['remarque']}: ${depense['montant']}"]);
+    }
+    sheetObject.appendRow(["Carburant"]);
+    for (var carburant in vehiculeData['carburant']) {
+      sheetObject.appendRow(["", "${carburant['remarque']}: ${carburant['montant']}"]);
+    }
+    sheetObject.appendRow(["Entretien"]);
+    for (var entretien in vehiculeData['entretien']) {
+      sheetObject.appendRow(["", "${entretien['remarque']}: ${entretien['montant']}"]);
+    }
+    sheetObject.appendRow(["Rappels"]);
+    for (var rappel in vehiculeData['rappel']) {
+      sheetObject.appendRow(["", "${rappel['type']}"]);
+    }
+
+     final output = await getExternalStorageDirectory();
+    final file = File("${output!.path}/rapport_vehicule_${vehiculeData['id']}.xlsx");
+    await file.writeAsBytes(excel.save() as List<int>);
+
+    print("Excel saved at: ${file.path}");
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -321,6 +436,29 @@ class _SideMenuState extends State<SideMenu> {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => AfficherTypeDepensePage(),
                         ));
+                      },
+                    ),
+
+                     Divider(),
+                    SizedBox(height: 10),
+                    ListTile(
+                      leading: Icon(Icons.picture_as_pdf,  color: Colors.white,),
+                      title: _isExpanded ? Text('PDF', style: TextStyle(
+    color: Colors.white,
+),) : null,
+                      onTap: ()async {
+                        await generatePdf();
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    ListTile(
+                      leading: Icon(Icons.file_download,  color: Colors.white,),
+                      title: _isExpanded ? Text('Excel', style: TextStyle(
+    color: Colors.white,
+
+  ),) : null,
+                      onTap: () async {
+                      await generateExcel();
                       },
                     ),
                   ],

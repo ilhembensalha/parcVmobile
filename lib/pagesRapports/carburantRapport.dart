@@ -1,6 +1,7 @@
 import 'package:carhabty/ghraphecarburant/MonthlyCarburantChart.dart';
 import 'package:carhabty/ghraphecarburant/MonthlyLitresChart.dart';
 import 'package:carhabty/graphiqueCharts/doughnut_charts_page.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // Pour convertir les réponses JSON
@@ -30,7 +31,7 @@ class _carburantState extends State<carburant> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? vehicleId = prefs.getInt('selectedVehicleId');
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/rapportCarburant/$vehicleId'));
+      final response = await http.get(Uri.parse('http://192.168.1.17:8000/api/rapportCarburant/$vehicleId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -51,8 +52,11 @@ class _carburantState extends State<carburant> {
   Future<void> fetchLitreData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? vehicleId = prefs.getInt('selectedVehicleId');
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/consomation/$vehicleId'));
+      final response = await http.get(Uri.parse('$url/consomation/$vehicleId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

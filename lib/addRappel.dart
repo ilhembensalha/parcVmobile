@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:carhabty/home.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -34,7 +35,10 @@ class _AddrappelPageState extends State<AddrappelPage> {
   }
 
   Future<void> _fetchTypeEntretien() async {
-    final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/typeentretien'));
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    final response = await http.get(Uri.parse('$url/typeentretien'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -46,7 +50,10 @@ class _AddrappelPageState extends State<AddrappelPage> {
   }
 
   Future<void> _fetchTypeDepenses() async {
-    final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/typedepense'));
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    final response = await http.get(Uri.parse('$url/typedepense'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -110,8 +117,11 @@ class _AddrappelPageState extends State<AddrappelPage> {
   }
 
   Future<void> _submitForm() async {
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     if (_formKey.currentState!.validate()) {
-      var uri = Uri.parse("http://192.168.1.113:8000/api/storeRappel");
+      var uri = Uri.parse("$url/storeRappel");
       var request = http.MultipartRequest("POST", uri);
 
 
@@ -128,10 +138,10 @@ class _AddrappelPageState extends State<AddrappelPage> {
         request.fields['kilometrage'] = _kilometrageController.text;
       }
 
-      if (_selectedTypeentretien != null && _selectedOption == 'Entretien') {
+      if (_selectedTypeentretien != null && _selectedOption == 'entretien') {
         request.fields['typeEntretien'] = _selectedTypeentretien!;
       }
-      if (_selectedTypeDepense != null && _selectedOption == 'Dépense') {
+      if (_selectedTypeDepense != null && _selectedOption == 'depense') {
         request.fields['typeDepense'] = _selectedTypeDepense!;
       }
 
@@ -179,30 +189,30 @@ class _AddrappelPageState extends State<AddrappelPage> {
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _selectedOption = 'Dépense';
+                        _selectedOption = 'depense';
                       });
                     },
                     child: Text('Dépense'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _selectedOption == 'Dépense' ? Colors.blue : Colors.grey,
+                      backgroundColor: _selectedOption == 'depense' ? Colors.blue : Colors.grey,
                     ),
                   ),
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _selectedOption = 'Entretien';
+                        _selectedOption = 'entretien';
                       });
                     },
                     child: Text('Entretien'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _selectedOption == 'Entretien' ? Colors.blue : Colors.grey,
+                      backgroundColor: _selectedOption == 'entretien' ? Colors.blue : Colors.grey,
                     ),
                   ),
                 ],
               ),
               SizedBox(height: 20),
               // Affiche le champ de type selon la sélection
-              if (_selectedOption == 'Dépense')
+              if (_selectedOption == 'depense')
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(labelText: 'Type de Dépense'),
                   value: _selectedTypeDepense,
@@ -224,7 +234,7 @@ class _AddrappelPageState extends State<AddrappelPage> {
                     return null;
                   },
                 ),
-              if (_selectedOption == 'Entretien')
+              if (_selectedOption == 'entretien')
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(labelText: 'Type de Entretien'),
                   value: _selectedTypeentretien,

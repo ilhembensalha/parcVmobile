@@ -1,14 +1,18 @@
 
 import 'package:carhabty/TypeEntretien/addpage.dart';
 import 'package:carhabty/TypeEntretien/editpage.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 // Fonction pour supprimer un type de dépense depuis le serveur
 Future<void> deleteTypeEntretien(int id) async {
+    final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
   final response = await http.delete(
-    Uri.parse('http://192.168.1.113:8000/api/typeentretiens/$id'), // Remplacez par l'URL de votre API avec l'ID du type de dépense
+    Uri.parse('$url/typeentretiens/$id'), // Remplacez par l'URL de votre API avec l'ID du type de dépense
   );
 
   if (response.statusCode != 200) {
@@ -41,7 +45,10 @@ class _AfficherTypeentretienPageState extends State<AfficherTypeEntretienPage> {
 
   // Fonction pour récupérer les types de dépenses depuis une API
   Future<List<dynamic>> fetchTypesEntretien() async {
-    final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/typeentretiens')); // Remplacez par l'URL de votre API
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    final response = await http.get(Uri.parse('$url/typeentretiens')); // Remplacez par l'URL de votre API
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body); // Retourne la liste des types de dépense
@@ -114,11 +121,11 @@ class _AfficherTypeentretienPageState extends State<AfficherTypeEntretienPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                      IconButton(
-  icon: Icon(Icons.edit, color: Colors.blue), // Icône d'édition
+  icon: Icon(Icons.edit), // Icône d'édition
   onPressed: () => _navigateToEditPage(_typesEntretien[index], index), // Appel à la fonction pour aller à la page d'édition
 ),
                       IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red), // Icône de suppression
+                        icon: Icon(Icons.delete), // Icône de suppression
                         onPressed: () => _deleteTypeDepense(_typesEntretien[index]['id'], index), // Appel à la fonction de suppression
                       ),
                     ],

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:carhabty/home.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -24,7 +25,10 @@ class _AddentretienPageState extends State<AddentretienPage> {
   }
 
   Future<void> _fetchTypeEntretien() async {
-    final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/typeentretien'));
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    final response = await http.get(Uri.parse('$url/typeentretien'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -97,7 +101,10 @@ class _AddentretienPageState extends State<AddentretienPage> {
   // Function to send the form data to Laravel API
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      var uri = Uri.parse("http://192.168.1.113:8000/api/storeEntetien");
+        final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+      var uri = Uri.parse("$url/storeEntetien");
 
       var request = http.MultipartRequest("POST", uri);
 

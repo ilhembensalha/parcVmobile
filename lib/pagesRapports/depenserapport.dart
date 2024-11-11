@@ -1,6 +1,7 @@
 import 'package:carhabty/ghraphedepense/MonthlyExpenseBarChart.dart';
 import 'package:carhabty/ghraphedepense/partyppe.dart';
 import 'package:carhabty/graphiqueCharts/doughnut_charts_page.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // Pour convertir les réponses JSON
@@ -26,8 +27,11 @@ class _depenseState extends State<depense> {
   Future<void> fetchCoutData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? vehicleId = prefs.getInt('selectedVehicleId');
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/rapportdepense/$vehicleId'));
+      final response = await http.get(Uri.parse('$url/rapportdepense/$vehicleId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

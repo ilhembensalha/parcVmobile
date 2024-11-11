@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert'; // Pour convertir les réponses JSON
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../service/api_service.dart';
+
 class Entretien extends StatefulWidget {
   @override
   _EntretienState createState() => _EntretienState();
@@ -27,7 +29,11 @@ class _EntretienState extends State<Entretien> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? vehicleId = prefs.getInt('selectedVehicleId');
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/rapportEntretien/$vehicleId'));
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+
+      final response = await http.get(Uri.parse('$url/rapportEntretien/$vehicleId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+
+import '../service/api_service.dart';
 
 class Message extends StatefulWidget {
   @override
@@ -24,8 +27,11 @@ class _MessageState extends State<Message> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? savedVehicleId = prefs.getInt('selectedVehicleId');
     if (savedVehicleId != null) {
+        final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
       try {
-        final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/rappels/$savedVehicleId'));
+        final response = await http.get(Uri.parse('$url/rappels/$savedVehicleId'));
 
         if (response.statusCode == 200) {
           setState(() {
@@ -49,7 +55,7 @@ class _MessageState extends State<Message> {
   }
 
   Future<void> _deleteRappel(BuildContext context, int id) async {
-    final response = await http.delete(Uri.parse('http://192.168.1.113:8000/api/rappeldelete/$id'));
+    final response = await http.delete(Uri.parse('http://192.168.1.17:8000/api/rappeldelete/$id'));
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Rappel supprimé avec succès")));
@@ -83,7 +89,10 @@ class _MessageState extends State<Message> {
 
   @override
   Widget build(BuildContext context) {
+
+    
     return Scaffold(
+      
       body: isLoading
           ? Center(child: CircularProgressIndicator()) // Afficher l'indicateur de chargement
           : rappels.isEmpty
@@ -91,29 +100,45 @@ class _MessageState extends State<Message> {
               : ListView.builder(
                   itemCount: rappels.length,
                   itemBuilder: (context, index) {
+
                     final rappel = rappels[index];
                     final type = rappel['type'];
-                    final typeIcon = type == 'Dépense' ? Icons.attach_money : Icons.build;
+                    final typeIcon = type == 'depense' ? Icons.attach_money : Icons.build;
+
+                     // Calcul de la différence de jours entre la date du rappel et aujourd'hui
+                    DateTime dateRappel = DateTime.parse(rappel['date']);
+                    DateTime now = DateTime.now();
+                    int daysDifference = dateRappel.difference(now).inDays;
+                    bool isPast = daysDifference < 0;
+
+                    // Formatage de la date et message de différence en jours
+                    String formattedDate = DateFormat('yyyy-MM-dd').format(dateRappel);
+                    String daysInfo = isPast
+                        ? "Il y a ${daysDifference.abs()} jours"
+                        : "Reste $daysDifference jours";
 
                     return Card(
                       margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                       child: ListTile(
                         leading: Icon(typeIcon, color: Colors.blue),
-                        title: Text("Rappel: ${rappel['remarque']}"),
-                        subtitle: Text("Type: $type\nDate: ${rappel['date']}"),
+                        title: Text("Rappel", style: TextStyle(color:  const Color.fromARGB(255, 33, 36, 33)),),
+                        subtitle: Text(
+                          "Type: $type\nDate: $formattedDate\n$daysInfo",
+                          style: TextStyle(color: isPast ? Colors.red : Colors.green),
+                        ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.edit, color: Colors.green),
+                              icon: Icon(Icons.edit),
                               onPressed: () => _editRappel(context, rappel['id']),
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
+                              icon: Icon(Icons.delete),
                               onPressed: () => _deleteRappel(context, rappel['id']),
                             ),
                             IconButton(
-                              icon: Icon(Icons.info, color: Colors.blue),
+                              icon: Icon(Icons.info),
                               onPressed: () => _showDetails(context, rappel['id']),
                             ),
                           ],

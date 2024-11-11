@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:carhabty/models/Depense.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -42,7 +43,10 @@ class _EditDepensePageState extends State<EditDepensePage> {
   }
 
   Future<void> _fetchTypeDepenses() async {
-    final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/typedepense'));
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    final response = await http.get(Uri.parse('$url/typedepense'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -86,7 +90,10 @@ class _EditDepensePageState extends State<EditDepensePage> {
 
   // Save changes
   Future<void> _saveDepense() async {
-    String url = 'http://192.168.1.113:8000/api/expenses/${widget.depense.id}';
+      final ApiService _apiService = ApiService();
+      final urll= _apiService.baseUrl;
+      print(urll);
+    String url = '$urll/expenses/${widget.depense.id}';
 
     var request = http.MultipartRequest("POST", Uri.parse(url));
 

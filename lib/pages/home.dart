@@ -17,6 +17,8 @@ import 'package:http/http.dart' as http;
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../service/api_service.dart';
+
 class Home extends StatefulWidget {
   Home({Key? key}) : super(key: key);
 
@@ -30,7 +32,7 @@ class _HomeState extends State<Home> {
   List<Depense> expenses = [];
   List<Carburant> fuel = [];
   List<Entretien> maintenance = [];
-   List<Rappel> rappels = [];
+
  
 
   @override
@@ -41,7 +43,10 @@ class _HomeState extends State<Home> {
 
   // Fonction pour récupérer la liste des véhicules depuis l'API
   Future<void> fetchVehicles() async {
-    final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/vehicles'));
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    final response = await http.get(Uri.parse('$url/vehicles'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
@@ -86,17 +91,19 @@ class _HomeState extends State<Home> {
  Future<Map<String, dynamic>> fetchVehicleData(int vehicleId) async {
   
     try {
-
-      final depenseResponse = await http.get(Uri.parse('http://192.168.1.113:8000/api/vehicles/$vehicleId/expenses'));
-      final fuelResponse = await http.get(Uri.parse('http://192.168.1.113:8000/api/vehicles/$vehicleId/fuel'));
-      final maintenanceResponse = await http.get(Uri.parse('http://192.168.1.113:8000/api/vehicles/$vehicleId/maintenance'));
-      final rappelResponse = await http.get(Uri.parse('http://192.168.1.113:8000/api/rappels/$vehicleId'));
+  final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+      final depenseResponse = await http.get(Uri.parse('$url/vehicles/$vehicleId/expenses'));
+      final fuelResponse = await http.get(Uri.parse('$url/vehicles/$vehicleId/fuel'));
+      final maintenanceResponse = await http.get(Uri.parse('$url/vehicles/$vehicleId/maintenance'));
+  
       if (depenseResponse.statusCode == 200 &&
           fuelResponse.statusCode == 200 &&
-          maintenanceResponse.statusCode == 200 &&
-          rappelResponse.statusCode == 200
+          maintenanceResponse.statusCode == 200 
+        
           ) {
-               print('good');
+  
         return {
           'expenses': (json.decode(depenseResponse.body) as List)
               .map((e) => Depense.fromJson(e))
@@ -107,9 +114,7 @@ class _HomeState extends State<Home> {
           'maintenance': (json.decode(maintenanceResponse.body) as List)
               .map((e) => Entretien.fromJson(e))
               .toList() ?? [],
-               'rappel': (json.decode(rappelResponse.body) as List)
-              .map((e) => Rappel.fromJson(e))
-              .toList() ?? [],
+              
            
         };
 
@@ -155,7 +160,7 @@ class _HomeState extends State<Home> {
                 children: [
                   DropdownSearch<Vehicule>(
                     items: vehicles, // Liste des véhicules
-                    itemAsString: (Vehicule vehicle) => vehicle.marque, // Affichage du nom du véhicule
+                    itemAsString: (Vehicule vehicle) => vehicle.nomV, // Affichage du nom du véhicule
                     selectedItem: selectedVehicle, // L'élément sélectionné
                     onChanged: _onVehicleSelected, // Action lors de la sélection
                     dropdownDecoratorProps: DropDownDecoratorProps(
@@ -215,24 +220,22 @@ class _HomeState extends State<Home> {
         final expenses = sortByDate(data['expenses'] as List<Depense>);
         final fuel = sortByDate(data['fuel'] as List<Carburant>);
         final maintenance = sortByDate(data['maintenance'] as List<Entretien>);
-        final rappels = sortByDate(data['rappel'] as List<Rappel>);
+    
         
        
 
-List<dynamic> allEvents = [...expenses, ...fuel, ...maintenance, ...rappels];
+List<dynamic> allEvents = [...expenses, ...fuel, ...maintenance];
 
 // Trier la liste combinée par date
 allEvents.sort((a, b) {
   // Récupérer et convertir la date
   DateTime dateA = (a is Depense) ? DateTime.parse(a.date) :
                    (a is Carburant) ? DateTime.parse(a.date) :
-                   (a is Entretien) ? DateTime.parse(a.date) :
-                   (a is Rappel) ? DateTime.parse(a.date) : DateTime.now(); // Valeur par défaut
+                   (a is Entretien) ? DateTime.parse(a.date) : DateTime.now(); // Valeur par défaut
 
   DateTime dateB = (b is Depense) ? DateTime.parse(b.date) :
                    (b is Carburant) ? DateTime.parse(b.date) :
-                   (b is Entretien) ? DateTime.parse(b.date) :
-                   (b is Rappel) ? DateTime.parse(b.date) : DateTime.now(); // Valeur par défaut
+                   (b is Entretien) ? DateTime.parse(b.date) :DateTime.now(); // Valeur par défaut
 
    return dateB.compareTo(dateA);
 });
@@ -255,18 +258,15 @@ allEvents.sort((a, b) {
             
             // Déterminer le type d'événement et configurer l'icône et le titre appropriés
             if (event is Depense) {
-              title = event.montant != null ? 'Dépense - Montant: ${event.montant}' : 'Dépense';
+              title = event.montant != null ? 'Dépense  Montant: ${event.montant}DT' : 'Dépense';
               icon = Icons.attach_money;
             } else if (event is Carburant) {
-              title = event.remarque != null ? 'Carburant - Remarque: ${event.remarque}' : 'Carburant';
+              title = event.remarque != null ? 'Carburant Type: ${event.typeCarburant}' : 'Carburant';
               icon = Icons.local_gas_station;
             } else if (event is Entretien) {
-              title = event.date != null ? 'Entretien - Date: ${event.date}' : 'Entretien';
+              title = event.date != null ? 'Entretien  Montant: ${event.montant}DT' : 'Entretien';
               icon = Icons.build;
-            } else if (event is Rappel) {
-              title = event.date != null ? 'Rappel - Date: ${event.date}' : 'Rappel';
-              icon = Icons.watch;
-            } else {
+            }else {
               title = 'Événement inconnu';
               icon = Icons.error;
             }
@@ -340,15 +340,7 @@ allEvents.sort((a, b) {
       ),
     );
   }
-   else if (event is Rappel) {
- 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => RappelDetailPage(rappelId: event.id),
-      ),
-    );
-  }
+  
   }
 
 void _editEvent(dynamic event) {
@@ -374,36 +366,27 @@ void _editEvent(dynamic event) {
       ),
     );
   }
-  else if (event is Rappel) {
- 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditRappelPage(rappelId: event.id),
-      ),
-    );
-  }
+
 }
 
 
   // Méthode pour supprimer un événement
 void _deleteEvent(dynamic event) async {
+    final ApiService _apiService = ApiService();
+      final urll= _apiService.baseUrl;
+      print(urll);
   String url = '';
   if (event is Depense) {
-    url = 'http://192.168.1.113:8000/api/expensesdelete/${event.id}';
+    url = '$urll/expensesdelete/${event.id}';
     print('depense suuprime');
   } else if (event is Carburant) {
-    url = 'http://192.168.1.113:8000/api/fueldelete/${event.id}';
+    url = '$urll/fueldelete/${event.id}';
       print('Carburant suuprime');
   } else if (event is Entretien) {
-    url = 'http://192.168.1.113:8000/api/maintenancedelete/${event.id}';
+    url = '$urll/maintenancedelete/${event.id}';
       print('Entretien suuprime');
   }
-   else if (event is Rappel) {
-    url = 'http://192.168.1.113:8000/api/rappeldelete/${event.id}';
-      print('Rappel suuprime');
-  }
-
+ 
   final response = await http.delete(Uri.parse(url));
 
   if (response.statusCode == 200) {
@@ -416,8 +399,6 @@ void _deleteEvent(dynamic event) async {
         fuel.remove(event);
       } else if (event is Entretien) {
         maintenance.remove(event);
-      }else if (event is Rappel) {
-        rappels.remove(event);
       }
     });
   } else {

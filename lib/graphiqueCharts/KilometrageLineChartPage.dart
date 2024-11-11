@@ -1,3 +1,4 @@
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:http/http.dart' as http;
@@ -16,12 +17,13 @@ class _KilometrageLineChartPageState extends State<KilometrageLineChartPage> {
   Future<void> fetchKilometrageData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? vehicleId = prefs.getInt('selectedVehicleId');
-
+final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     if (vehicleId != null) {
       try {
         // Appel à l'API pour récupérer les données du kilométrage
-        final response = await http.get(Uri.parse(
-            'http://192.168.1.113:8000/api/coupteurkilometrage/$vehicleId'));
+        final response = await http.get(Uri.parse('$url/coupteurkilometrage/$vehicleId'));
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           setState(() {

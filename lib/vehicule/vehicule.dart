@@ -1,5 +1,6 @@
 import 'package:carhabty/home.dart';
 import 'package:carhabty/models/vehicule.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,8 +38,11 @@ class _EditVehiculePageState extends State<EditVehiculePage> {
   }
 
   Future<void> _loadVehiculeData(int id) async {
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/vehicles/$id/edit'));
+      final response = await http.get(Uri.parse('$url/vehicles/$id/edit'));
 
       if (response.statusCode == 200) {
         setState(() {
@@ -52,12 +56,16 @@ class _EditVehiculePageState extends State<EditVehiculePage> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors du chargement des données')));
     }
   }
+  
 
   Future<void> _updateVehicule() async {
     if (vehicule != null) {
+        final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
       try {
         final response = await http.put(
-          Uri.parse('http://192.168.1.113:8000/api/vehicles/${vehicule!.id}/update'),
+          Uri.parse('$url/vehicles/${vehicule!.id}/update'),
           headers: <String, String>{
             'Content-Type': 'application/json',
           },

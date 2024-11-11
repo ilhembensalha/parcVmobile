@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
@@ -24,7 +25,11 @@ class _MapsPageState extends State<MapsPage> {
   Future<void> _fetchVehicleLocation() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? id = prefs.getInt('selectedVehicleId');
-    final url = Uri.parse('http://192.168.1.113:8000/api/vehicles/${id}/location');
+    final ApiService _apiService = ApiService();
+      final urll= _apiService.baseUrl;
+      print(urll);
+      
+    final url = Uri.parse('$urll/vehicles/${id}/location');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {

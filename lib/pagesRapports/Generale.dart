@@ -2,6 +2,7 @@ import 'package:carhabty/graphiqueCharts/KilometrageLineChartPage.dart';
 import 'package:carhabty/graphiqueCharts/MonthlyBarChartPage.dart';
 import 'package:carhabty/graphiqueCharts/barcharts.dart';
 import 'package:carhabty/graphiqueCharts/doughnut_charts_page.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // Pour convertir les réponses JSON
@@ -32,8 +33,11 @@ class _GeneraleState extends State<Generale> {
   Future<void> fetchCoutData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? vehicleId = prefs.getInt('selectedVehicleId');
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/rapportcout/$vehicleId'));
+      final response = await http.get(Uri.parse('$url/rapportcout/$vehicleId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -57,8 +61,11 @@ class _GeneraleState extends State<Generale> {
   Future<void> fetchDistanseData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? vehicleId = prefs.getInt('selectedVehicleId');
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/rapportdistanse/$vehicleId'));
+      final response = await http.get(Uri.parse('$url/rapportdistanse/$vehicleId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

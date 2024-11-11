@@ -58,6 +58,12 @@ dependencies:
   encrypt: ^5.0.1
   flutter_map: ^4.0.0  # Assurez-vous d'utiliser la dernière version
   latlong2: ^0.8.1
+  googleapis: ^9.0.0
+  googleapis_auth: ^1.4.1
+  pdf: ^3.8.0
+  printing: ^5.8.0
+  excel: ^2.0.7
+  path_provider: ^2.1.5
 
 flutter_native_splash:
   android: true
@@ -82,9 +88,9 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/icon/app_icon2.png" # Chemin de l'image de l'icône
+  image_path: "assets/icon/app_icon3.png" # Chemin de l'image de l'icône
   adaptive_icon_background: "#FFFFFF"    # Couleur de fond pour Android (facultatif)
-  adaptive_icon_foreground: "assets/icon/app_icon2.png" 
+  adaptive_icon_foreground: "assets/icon/app_icon3.png" 
   
 
 # For information on the generic Dart part of this file, see the
@@ -92,6 +98,7 @@ flutter_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
+
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

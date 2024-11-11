@@ -1,3 +1,4 @@
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -23,7 +24,10 @@ class _MonthlyCarburantChartState extends State<MonthlyCarburantChart> {
     int? vehicleId = prefs.getInt('selectedVehicleId');
 
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/graphcoutcarburant/$vehicleId'));
+        final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+      final response = await http.get(Uri.parse('$url/graphcoutcarburant/$vehicleId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

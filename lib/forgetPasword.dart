@@ -1,4 +1,5 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -11,8 +12,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final TextEditingController _emailController = TextEditingController();
 
   Future<void> _sendResetPasswordLink() async {
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     final response = await http.post(
-      Uri.parse('http://192.168.1.113:8000/api/forgot-password'),
+      Uri.parse('url/forgot-password'),
       headers: {'Content-Type': 'application/json'},
       body: '{"email": "${_emailController.text}"}',
     );

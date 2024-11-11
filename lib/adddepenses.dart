@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:carhabty/home.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -24,7 +25,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
   }
 
   Future<void> _fetchTypeDepenses() async {
-    final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/typedepense'));
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    final response = await http.get(Uri.parse('$url/typedepense'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -96,8 +100,11 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
   // Function to send the form data to Laravel API
   Future<void> _submitForm() async {
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     if (_formKey.currentState!.validate()) {
-      var uri = Uri.parse("http://192.168.1.113:8000/api/store");
+      var uri = Uri.parse("$url/store");
 
       var request = http.MultipartRequest("POST", uri);
 

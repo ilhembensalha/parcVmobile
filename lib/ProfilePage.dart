@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io'; // Pour la gestion des fichiers locaux
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -33,9 +34,12 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _fetchUserProfile() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? userId = prefs.getInt('userId');
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
 
     if (userId != null) {
-      final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/user/$userId/profile'));
+      final response = await http.get(Uri.parse('$url/user/$userId/profile'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -57,9 +61,11 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_formKey.currentState!.validate()) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       int? userId = prefs.getInt('userId');
-
+  final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
       if (userId != null) {
-        var uri = Uri.parse("http://192.168.1.113:8000/api/user/$userId/updateProfile");
+        var uri = Uri.parse("$url/user/$userId/updateProfile");
 
         var request = http.MultipartRequest("POST", uri);
         request.fields['name'] = _nameController.text;

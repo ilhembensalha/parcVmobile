@@ -1,3 +1,4 @@
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -23,7 +24,10 @@ class _RappelDetailPageState extends State<RappelDetailPage> {
   }
 
   Future<void> _loadRappelDetails() async {
-    final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/rappel/${widget.rappelId}'));
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    final response = await http.get(Uri.parse('$url/rappel/${widget.rappelId}'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -44,7 +48,10 @@ class _RappelDetailPageState extends State<RappelDetailPage> {
   }
 
   Future<void> _loadTypeDepenseName(int typeId) async {
-    final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/typeDepense/$typeId'));
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    final response = await http.get(Uri.parse('$url/typeDepense/$typeId'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -56,7 +63,10 @@ class _RappelDetailPageState extends State<RappelDetailPage> {
   }
 
   Future<void> _loadTypeEntretienName(int typeId) async {
-    final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/typeEntretien/$typeId'));
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    final response = await http.get(Uri.parse('$url/typeEntretien/$typeId'));
 
     if (response.statusCode == 200) {
       setState(() {

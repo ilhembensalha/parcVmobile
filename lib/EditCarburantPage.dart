@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:carhabty/models/Carburant.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -68,7 +69,10 @@ class _EditCarburantPageState extends State<EditCarburantPage> {
   }
 
   Future<void> _saveCarburant() async {
-    var uri = Uri.parse("http://192.168.1.113:8000/api/fuel/${widget.carburant.id}");
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    var uri = Uri.parse("$url/fuel/${widget.carburant.id}");
 
     var request = http.MultipartRequest("POST", uri);
     request.fields['date'] = _dateController.text;

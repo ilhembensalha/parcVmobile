@@ -1,3 +1,4 @@
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:http/http.dart' as http;
@@ -19,8 +20,11 @@ class _DepenseCostPieChartState extends State<DepenseCostPieChart> {
 
     if (vehicleId != null) {
       try {
+        final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
         // Appel à l'API pour récupérer les données des coûts de dépense par type
-        final response = await http.get(Uri.parse('http://192.168.1.113:8000/api/depenseGraphepartype/$vehicleId'));
+        final response = await http.get(Uri.parse('$url/depenseGraphepartype/$vehicleId'));
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           setState(() {

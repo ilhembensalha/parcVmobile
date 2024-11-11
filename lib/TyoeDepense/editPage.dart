@@ -1,13 +1,17 @@
 import 'package:carhabty/TyoeDepense/depense.dart';
 import 'package:carhabty/pagesRapports/depenserapport.dart';
+import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 Future<void> updateTypeDepense(int id, String newName) async {
   try {
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     final response = await http.put(
-      Uri.parse('http://192.168.1.113:8000/api/typedepenses/$id'),
+      Uri.parse('$url/typedepenses/$id'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'name': newName}),
     );
