@@ -1,37 +1,37 @@
-import 'package:carhabty/ghraphecarburant/MonthlyCarburantChart.dart';
-import 'package:carhabty/ghraphecarburant/MonthlyLitresChart.dart';
-import 'package:carhabty/graphiqueCharts/doughnut_charts_page.dart';
+import 'package:carhabty/ghraphedepense/MonthlyExpenseBarChart.dart';
+import 'package:carhabty/ghraphedepense/partyppe.dart';
+import 'package:carhabty/graphiquegenerale/doughnut_charts_page.dart';
 import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // Pour convertir les réponses JSON
 import 'package:shared_preferences/shared_preferences.dart';
 
-class carburant extends StatefulWidget {
+class depense extends StatefulWidget {
   @override
-  _carburantState createState() => _carburantState();
+  _depenseState createState() => _depenseState();
 }
 
-class _carburantState extends State<carburant> {
+class _depenseState extends State<depense> {
   // Variables pour stocker les coûts récupérés
   var coutTotal;
   var coutmois;
   var coutAnnee;
-  var litre ;
-  var litremonth ;
-  var litreyear;
 
     String? selectedOption;
 
   // Liste des options à afficher dans la liste déroulante
-  final List<String> options = ['Graphique des Coûts de Carburant Mensuels', 'Graphique des Consommations Carburant  Mensuels'];
+  final List<String> options = ['Dépenses Mensuelles par Mois', 'Coûts des Dépenses par Type'];
 
   // Méthode pour appeler l'API
   Future<void> fetchCoutData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? vehicleId = prefs.getInt('selectedVehicleId');
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.17:8000/api/rapportCarburant/$vehicleId'));
+      final response = await http.get(Uri.parse('$url/rapportdepense/$vehicleId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -49,36 +49,12 @@ class _carburantState extends State<carburant> {
     }
   }
 
-  Future<void> fetchLitreData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? vehicleId = prefs.getInt('selectedVehicleId');
-      final ApiService _apiService = ApiService();
-      final url= _apiService.baseUrl;
-      print(url);
-    try {
-      final response = await http.get(Uri.parse('$url/consomation/$vehicleId'));
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-
-        setState(() {
-          litre = data['litretotel'];
-          litreyear = data['carburantlitretmonth'];
-          litremonth = data['carburantlitreyear'];
-        });
-      } else {
-        throw Exception('Erreur lors de la récupération des données');
-      }
-    } catch (e) {
-      print('Erreur: $e');
-    }
-  }
 
   @override
   void initState() {
     super.initState();
     fetchCoutData();
-    fetchLitreData();
   }
 
   @override
@@ -100,17 +76,6 @@ class _carburantState extends State<carburant> {
                       _buildCostColumn('Total', coutTotal),
                       _buildCostColumn('Ce Mois', coutmois),
                       _buildCostColumn('Cette Année', coutAnnee),
-                    ],
-                  ),
-                     SizedBox(height: 40),
-                  Text('Consomation en L ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildLitreColumn('Total ', litre),
-                      _buildLitreColumn('Ce Mois ', litremonth),
-                      _buildLitreColumn('Cette Année ', litreyear),
                     ],
                   ),
                   SizedBox(height: 40),
@@ -141,16 +106,16 @@ class _carburantState extends State<carburant> {
                   selectedOption = newValue;
                 });
                 // Naviguer vers une autre page si 'Répartition des Coûts total' est sélectionné
-                if (newValue == 'Graphique des Coûts de Carburant Mensuels') {
+                if (newValue == 'Dépenses Mensuelles par Mois') {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MonthlyCarburantChart()),
+                    MaterialPageRoute(builder: (context) => MonthlyExpenseBarChart()),
                   );
                 }
-                 if (newValue == 'Graphique des Consommations Carburant  Mensuels') {
+                   if (newValue == 'Coûts des Dépenses par Type') {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MonthlyLitresChart()),
+                    MaterialPageRoute(builder: (context) => DepenseCostPieChart()),
                   );
                 }
               },
@@ -179,14 +144,6 @@ class _carburantState extends State<carburant> {
     );
   }
 
-  Column _buildLitreColumn(String label, var value) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-        Text('${value ?? 0} L', style: TextStyle(fontSize: 18)),
-      ],
-    );
-  }
+
 
 }

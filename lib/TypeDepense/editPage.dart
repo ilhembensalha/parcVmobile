@@ -1,5 +1,5 @@
-import 'package:carhabty/TyoeDepense/depense.dart';
-import 'package:carhabty/pagesRapports/depenserapport.dart';
+import 'package:carhabty/TypeDepense/depense.dart';
+import 'package:carhabty/rapports/pagesRapports/depenserapport.dart';
 import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;

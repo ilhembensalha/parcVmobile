@@ -1,5 +1,5 @@
-import 'package:carhabty/TyoeDepense/addpage.dart';
-import 'package:carhabty/TyoeDepense/editPage.dart';
+import 'package:carhabty/TypeDepense/addpage.dart';
+import 'package:carhabty/TypeDepense/editPage.dart';
 import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;

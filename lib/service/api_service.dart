@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String baseUrl = 'http://192.168.1.17:8000/api'; // Update with your API base URL
+  final String baseUrl = 'http://192.168.1.113:8000/api'; // Update with your API base URL
   
 
 
@@ -77,5 +77,44 @@ class ApiService {
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
+  }
+
+
+   Future<http.Response> get(String endpoint) async {
+    final response = await http.get(Uri.parse('$baseUrl$endpoint'));
+    _handleResponse(response);
+    return response;
+  }
+
+  Future<http.Response> post(String endpoint, Map<String, dynamic> data) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: {"Content-Type": "application/json"},
+      body: json.encode(data),
+    );
+    _handleResponse(response);
+    return response;
+  }
+
+  Future<http.Response> put(String endpoint, Map<String, dynamic> data) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: {"Content-Type": "application/json"},
+      body: json.encode(data),
+    );
+    _handleResponse(response);
+    return response;
+  }
+
+  Future<http.Response> delete(String endpoint) async {
+    final response = await http.delete(Uri.parse('$baseUrl$endpoint'));
+    _handleResponse(response);
+    return response;
+  }
+
+  void _handleResponse(http.Response response) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('Erreur HTTP: ${response.statusCode} - ${response.reasonPhrase}');
+    }
   }
 }

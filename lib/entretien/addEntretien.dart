@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:carhabty/home.dart';
+import 'package:carhabty/Spincircle.dart';
 import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,34 +8,34 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AddExpensePage extends StatefulWidget {
+class AddentretienPage extends StatefulWidget {
   @override
-  _AddExpensePageState createState() => _AddExpensePageState();
+  _AddentretienPageState createState() => _AddentretienPageState();
 }
 
-class _AddExpensePageState extends State<AddExpensePage> {
+class _AddentretienPageState extends State<AddentretienPage> {
   final _formKey = GlobalKey<FormState>();
-    List<dynamic> _typeDepenses = [];
-  String? _selectedTypeDepense;
+    List<dynamic> _typeEntretien = [];
+  String? _selectedTypeentretien;
 @override
   void initState() {
     super.initState();
     _loadVehicle(); 
-    _fetchTypeDepenses(); // Charge les données de véhicule depuis le local storage
+    _fetchTypeEntretien(); // Charge les données de véhicule depuis le local storage
   }
 
-  Future<void> _fetchTypeDepenses() async {
+  Future<void> _fetchTypeEntretien() async {
       final ApiService _apiService = ApiService();
       final url= _apiService.baseUrl;
       print(url);
-    final response = await http.get(Uri.parse('$url/typedepense'));
+    final response = await http.get(Uri.parse('$url/typeentretien'));
 
     if (response.statusCode == 200) {
       setState(() {
-        _typeDepenses = json.decode(response.body); // Décode la réponse JSON
+        _typeEntretien = json.decode(response.body); // Décode la réponse JSON
       });
     } else {
-      throw Exception('Erreur lors du chargement des types de dépense');
+      throw Exception('Erreur lors du chargement des types de entretien');
     }
   }
 
@@ -100,11 +100,11 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
   // Function to send the form data to Laravel API
   Future<void> _submitForm() async {
-      final ApiService _apiService = ApiService();
+    if (_formKey.currentState!.validate()) {
+        final ApiService _apiService = ApiService();
       final url= _apiService.baseUrl;
       print(url);
-    if (_formKey.currentState!.validate()) {
-      var uri = Uri.parse("$url/store");
+      var uri = Uri.parse("$url/storeEntetien");
 
       var request = http.MultipartRequest("POST", uri);
 
@@ -113,8 +113,8 @@ class _AddExpensePageState extends State<AddExpensePage> {
       request.fields['montant'] = _montantController.text;
       request.fields['vehicule'] = _vehiculeController.text;
       request.fields['conducteur'] = _conducteurController.text;
-       if (_selectedTypeDepense != null) {
-      request.fields['typeDepense'] = _selectedTypeDepense!; // ID du type de dépense
+       if (_selectedTypeentretien != null) {
+      request.fields['typeEntretien'] = _selectedTypeentretien!; // ID du type de Entretien      request.fields['typeEntretien'] = _selectedTypeentretien!; // ID du type de Entretien
     }
 
 
@@ -127,12 +127,12 @@ class _AddExpensePageState extends State<AddExpensePage> {
       var response = await request.send();
 
       if (response.statusCode == 201) {
-        print("Dépense ajoutée avec succès !");
           Navigator.push(
         context, new MaterialPageRoute(builder: (context) => Spincircle()));
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Dépense ajoutée avec succès !"),
+      content: Text("Entretien ajoutée avec succès !"),
     ));
+        print("Entretien ajoutée avec succès !");
       } else {
         print("Erreur : ${response.statusCode}");
       }
@@ -143,7 +143,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ajouter Dépense'),
+        title: Text('Ajouter Entretien'),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -169,22 +169,22 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 readOnly: true, // Empêche l'utilisateur de taper directement
               ),
                DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Type de dépense'),
-                value: _selectedTypeDepense,
-                items: _typeDepenses.map<DropdownMenuItem<String>>((dynamic type) {
+                decoration: InputDecoration(labelText: 'Type de Entretien'),
+                value: _selectedTypeentretien,
+                items: _typeEntretien.map<DropdownMenuItem<String>>((dynamic type) {
                   return DropdownMenuItem<String>(
                     value: type['id'].toString(), // Utilise l'ID comme valeur
-                    child: Text(type['name']), // Affiche le nom du type de dépense
+                    child: Text(type['name']), // Affiche le nom du type de Entretien                    child: Text(type['name']), // Affiche le nom du type de Entretien
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
                   setState(() {
-                    _selectedTypeDepense = newValue;
+                    _selectedTypeentretien = newValue;
                   });
                 },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Veuillez sélectionner un type de dépense';
+                    return 'Veuillez sélectionner un type de Entretien  return ';
                   }
                   return null;
                 },

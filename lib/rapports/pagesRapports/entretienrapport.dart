@@ -1,12 +1,12 @@
 import 'package:carhabty/grapheentretien/MonthlyMaintenanceCostChart%20.dart';
 import 'package:carhabty/grapheentretien/partype.dart';
-import 'package:carhabty/graphiqueCharts/doughnut_charts_page.dart';
+import 'package:carhabty/graphiquegenerale/doughnut_charts_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // Pour convertir les réponses JSON
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../service/api_service.dart';
+import '../../service/api_service.dart';
 
 class Entretien extends StatefulWidget {
   @override

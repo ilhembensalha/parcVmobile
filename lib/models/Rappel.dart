@@ -30,7 +30,7 @@ class Rappel {
       remarque: json['remarque'] ?? 'Remarque inconnue', // Valeur par défaut si remarque est null
       date: json['date'] ?? 'Date inconnue', // Valeur par défaut si date est null
       kilometrage: json['kilometrage'] ?? 0, // Par défaut 0 litre si non fourni
-      type: json['Type'] ?? 'Type inconnu', // Valeur par défaut si null
+      type: json['type'] ?? 'Type inconnu', // Valeur par défaut si null
       vehicule: json['vehicule'] ?? 'Véhicule inconnu', // Valeur par défaut si null
         typeDepense: json['typeDepense'] ?? 'Type de dépense inconnu',
        typeEntretien: json['typeEntretien'] ?? 'Type entretien inconnu', // Valeur par défaut si le type est null

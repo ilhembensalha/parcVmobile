@@ -1,7 +1,7 @@
 import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
-import 'package:carhabty/home.dart'; // Page après la connexion.
-import 'auth_screens.dart'; // Écran de connexion.
+import 'package:carhabty/Spincircle.dart'; // Page après la connexion.
+import 'auth/auth_screens.dart'; // Écran de connexion.
 import 'package:firebase_core/firebase_core.dart'; // Initialisation Firebase
 import 'package:firebase_messaging/firebase_messaging.dart'; // Notifications
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';

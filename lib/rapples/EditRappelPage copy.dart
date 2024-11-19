@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:carhabty/home.dart';
+import 'package:carhabty/Spincircle.dart';
 import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,12 +8,16 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AddrappelPage extends StatefulWidget {
+class EditRappelPage extends StatefulWidget {
+  final int rappelId; // ID du rappel à modifier
+
+  EditRappelPage({required this.rappelId});
+
   @override
-  _AddrappelPageState createState() => _AddrappelPageState();
+  _EditRappelPageState createState() => _EditRappelPageState();
 }
 
-class _AddrappelPageState extends State<AddrappelPage> {
+class _EditRappelPageState extends State<EditRappelPage> {
   final _formKey = GlobalKey<FormState>();
 
   List<dynamic> _typeEntretien = [];
@@ -23,15 +27,15 @@ class _AddrappelPageState extends State<AddrappelPage> {
 
   String _selectedOption = 'Dépense'; // Pour stocker le type sélectionné (Dépense ou Entretien)
 
-   bool _isDateChecked = false;
+  bool _isDateChecked = false;
   bool _isKilometrageChecked = false;
 
   @override
   void initState() {
     super.initState();
-    _loadVehicle();
     _fetchTypeEntretien();
-    _fetchTypeDepenses(); // Charge les types disponibles
+    _fetchTypeDepenses();
+    _loadRappelDetails(); // Charge les détails de l'événement de rappel
   }
 
   Future<void> _fetchTypeEntretien() async {
@@ -64,25 +68,57 @@ class _AddrappelPageState extends State<AddrappelPage> {
     }
   }
 
-  Future<void> _loadVehicle() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? vehicleId = prefs.getInt('selectedVehicleId');
-    if (vehicleId != null) {
-      _vehiculeController.text = vehicleId.toString();
-    }
-    int? userId = prefs.getInt('userId');
-    if (userId != null) {
-      _conducteurController.text = userId.toString();
-    }
+
+Future<void> _loadRappelDetails() async {
+    final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+  final response = await http.get(Uri.parse('$url/rappel/${widget.rappelId}'));
+  print(widget.rappelId);
+
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    print(data);
+
+    // Accéder à l'objet 'rappel' dans la réponse
+    final rappel = data['rappel'];
+    print(rappel);
+
+    setState(() {
+      // Vérifiez que les données sont disponibles avant de les attribuer aux contrôleurs et variables
+      _remarqueController.text = rappel['remarque'] ?? ''; 
+      _dateController.text = rappel['date'] ?? ''; 
+      _kilometrageController.text = rappel['kilometrage'] != null ? rappel['kilometrage'].toString() : ''; 
+      
+      // Déterminez si le type est "Entretien" ou "Dépense" et mettez à jour la sélection
+      _selectedOption = rappel['type'] ;
+      
+      if (_selectedOption == 'entretien') {
+        _selectedTypeentretien = rappel['typeEntretien']?.toString();
+        _selectedTypeDepense = null; // Réinitialise typeDepense si non applicable
+      } else if (_selectedOption == 'depense') {
+        _selectedTypeDepense = rappel['typeDepense']?.toString();
+        _selectedTypeentretien = null; // Réinitialise typeEntretien si non applicable
+      }
+        print(_selectedOption);
+          print(rappel['typeDepense']);
+            print(rappel['typeEntretien']);
+      print(_selectedTypeentretien);
+      print(_selectedTypeDepense);
+
+      // Met à jour les valeurs des checkboxes en fonction des données reçues
+      _isDateChecked = rappel['date'] != null;
+      _isKilometrageChecked = rappel['kilometrage'] != null;
+    });
+  } else {
+    throw Exception('Erreur lors du chargement des détails du rappel');
   }
+}
 
   // Form field controllers
   TextEditingController _dateController = TextEditingController();
   TextEditingController _remarqueController = TextEditingController();
-  TextEditingController _vehiculeController = TextEditingController();
-  TextEditingController _conducteurController = TextEditingController();
   TextEditingController _kilometrageController = TextEditingController();
-  bool _obscureText = true;
   DateTime? _selectedDate;
 
   Future<void> _selectDate(BuildContext context) async {
@@ -101,37 +137,21 @@ class _AddrappelPageState extends State<AddrappelPage> {
     }
   }
 
-  File? _image;
-  final picker = ImagePicker();
-
-  Future<void> _pickImage() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
-    });
-  }
 
   Future<void> _submitForm() async {
-      final ApiService _apiService = ApiService();
+    if (_formKey.currentState!.validate()) {
+        final ApiService _apiService = ApiService();
       final url= _apiService.baseUrl;
       print(url);
-    if (_formKey.currentState!.validate()) {
-      var uri = Uri.parse("$url/storeRappel");
+      var uri = Uri.parse("$url/updateRappel/${widget.rappelId}");
       var request = http.MultipartRequest("POST", uri);
 
-
       request.fields['remarque'] = _remarqueController.text;
-      request.fields['vehicule'] = _vehiculeController.text;
-     
-      request.fields['conducteur'] = _conducteurController.text;
       request.fields['type'] = _selectedOption;
+      print(_selectedOption);
+      print(_selectedTypeentretien);
 
-        if (_isDateChecked) {
+      if (_isDateChecked) {
         request.fields['date'] = _dateController.text;
       }
       if (_isKilometrageChecked) {
@@ -140,42 +160,32 @@ class _AddrappelPageState extends State<AddrappelPage> {
 
       if (_selectedTypeentretien != null && _selectedOption == 'entretien') {
         request.fields['typeEntretien'] = _selectedTypeentretien!;
+         request.fields['typeDepense'] = "";
       }
       if (_selectedTypeDepense != null && _selectedOption == 'depense') {
         request.fields['typeDepense'] = _selectedTypeDepense!;
+        request.fields['typeEntretien'] = "";
       }
 
-      if (_image != null) {
-        var pic = await http.MultipartFile.fromPath("image", _image!.path);
-        request.files.add(pic);
-      }
+  
 
       var response = await request.send();
-      if (response.statusCode == 201) {
-          Navigator.push(
-        context, new MaterialPageRoute(builder: (context) => Spincircle()));
+      if (response.statusCode == 200) {
+         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Rappel ajouté avec succès !"),
-    ));
-        print("Rappel ajouté avec succès !");
+          content: Text("Rappel modifié avec succès !"),
+        ));
       } else {
         print("Erreur : ${response.statusCode}");
       }
     }
-  }
-    // Fonction pour vérifier si un champ est rempli et afficher la case à cocher correspondante
-  void _updateCheckboxVisibility() {
-    setState(() {
-      _isDateChecked = _dateController.text.isNotEmpty;
-      _isKilometrageChecked = _kilometrageController.text.isNotEmpty;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ajouter Rappel'),
+        title: Text('Modifier Rappel'),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -211,7 +221,6 @@ class _AddrappelPageState extends State<AddrappelPage> {
                 ],
               ),
               SizedBox(height: 20),
-              // Affiche le champ de type selon la sélection
               if (_selectedOption == 'depense')
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(labelText: 'Type de Dépense'),
@@ -251,12 +260,17 @@ class _AddrappelPageState extends State<AddrappelPage> {
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Veuillez sélectionner un type de entretien';
+                      return 'Veuillez sélectionner un type d\'entretien';
                     }
                     return null;
                   },
                 ),
-           TextFormField(
+              TextFormField(
+                controller: _remarqueController,
+                decoration: InputDecoration(labelText: 'Remarque'),
+              ),
+              SizedBox(height: 16),
+              TextFormField(
                 controller: _dateController,
                 decoration: InputDecoration(
                   labelText: 'Date',
@@ -265,77 +279,23 @@ class _AddrappelPageState extends State<AddrappelPage> {
                     onPressed: () => _selectDate(context),
                   ),
                 ),
-                validator: (value) {
-                  if (_isDateChecked && (value == null || value.isEmpty)) {
-                    return 'Veuillez entrer la date';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  _updateCheckboxVisibility();
-                },
                 readOnly: true,
-              ),
-              // Affiche la case à cocher si la date est remplie
-              if (_dateController.text.isNotEmpty)
-                Row(
-                  children: [
-                    Text("Envoyer la date"),
-                    Checkbox(
-                      value: _isDateChecked,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _isDateChecked = value!;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-
-              // Champ Kilométrage avec case à cocher (affiche si le kilométrage est rempli)
-              TextFormField(
-                controller: _kilometrageController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Kilométrage'),
-                validator: (value) {
-                  if (_isKilometrageChecked && (value == null || value.isEmpty)) {
-                    return 'Veuillez entrer le kilométrage';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  _updateCheckboxVisibility();
-                },
-              ),
-              // Affiche la case à cocher si le kilométrage est rempli
-              if (_kilometrageController.text.isNotEmpty)
-                Row(
-                  children: [
-                    Text("Envoyer le kilométrage"),
-                    Checkbox(
-                      value: _isKilometrageChecked,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _isKilometrageChecked = value!;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              TextFormField(
-                controller: _remarqueController,
-                decoration: InputDecoration(labelText: 'Remarque'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer une remarque';
+                    return 'Veuillez sélectionner une date';
                   }
                   return null;
                 },
               ),
-              SizedBox(height: 20),
+              TextFormField(
+                controller: _kilometrageController,
+                decoration: InputDecoration(labelText: 'Kilométrage'),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _submitForm,
-                child: Text('Soumettre'),
+                child: Text('Enregistrer'),
               ),
             ],
           ),

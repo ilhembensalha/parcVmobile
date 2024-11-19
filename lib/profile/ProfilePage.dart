@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart'; // Pour sélectionner des images si nécessaire
+import 'package:animate_do/animate_do.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -117,7 +118,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profil utilisateur'),
+        title: Text('Profil'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -138,7 +139,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           : AssetImage('assets/images/default_profile.png')) as ImageProvider,
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 30),
               // Champ de saisie pour le nom
               TextFormField(
                 controller: _nameController,
@@ -150,6 +151,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   return null;
                 },
               ),
+                SizedBox(height: 20),
+  
               // Champ de saisie pour l'email
               TextFormField(
                 controller: _emailController,
@@ -161,18 +164,62 @@ class _ProfilePageState extends State<ProfilePage> {
                   return null;
                 },
               ),
+                SizedBox(height: 20),
+
               // Champ pour le mot de passe (optionnel)
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Mot de passe (facultatif)'),
+                decoration: InputDecoration(labelText: 'Mot de passe '),
                 obscureText: true,
               ),
               SizedBox(height: 20),
               // Bouton pour enregistrer les modifications
-              ElevatedButton(
+             /* ElevatedButton(
                 onPressed: _updateProfile,
                 child: Text('Mettre à jour le profil'),
-              ),
+              ),*/
+              
+            SizedBox(height: 20),
+ FadeInUp(
+  duration: const Duration(milliseconds: 1900),
+  child: GestureDetector(
+    onTap:_updateProfile,
+    child: Container(
+      height: 50,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        gradient: const LinearGradient(
+          colors: [
+            Color.fromRGBO(52, 138, 199, 1),
+            Color.fromRGBO(52, 138, 199, .6),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blueAccent.withOpacity(0.3),
+            spreadRadius: 5,
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.edit, color: Colors.white),
+          SizedBox(width: 10),
+          Text(
+            "Mettre à jour le profil",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+),
             ],
           ),
         ),

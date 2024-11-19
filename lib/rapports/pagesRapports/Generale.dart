@@ -1,7 +1,7 @@
-import 'package:carhabty/graphiqueCharts/KilometrageLineChartPage.dart';
-import 'package:carhabty/graphiqueCharts/MonthlyBarChartPage.dart';
-import 'package:carhabty/graphiqueCharts/barcharts.dart';
-import 'package:carhabty/graphiqueCharts/doughnut_charts_page.dart';
+import 'package:carhabty/graphiquegenerale/KilometrageLineChartPage.dart';
+import 'package:carhabty/graphiquegenerale/MonthlyBarChartPage.dart';
+import 'package:carhabty/graphiquegenerale/barcharts.dart';
+import 'package:carhabty/graphiquegenerale/doughnut_charts_page.dart';
 import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;

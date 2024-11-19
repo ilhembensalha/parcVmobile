@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:carhabty/home.dart';
+import 'package:carhabty/Spincircle.dart';
 import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,35 +8,19 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AddentretienPage extends StatefulWidget {
+class AddCarburantPage extends StatefulWidget {
   @override
-  _AddentretienPageState createState() => _AddentretienPageState();
+  _AddCarburantPageState createState() => _AddCarburantPageState();
 }
 
-class _AddentretienPageState extends State<AddentretienPage> {
+class _AddCarburantPageState extends State<AddCarburantPage> {
   final _formKey = GlobalKey<FormState>();
-    List<dynamic> _typeEntretien = [];
-  String? _selectedTypeentretien;
+
 @override
   void initState() {
     super.initState();
     _loadVehicle(); 
-    _fetchTypeEntretien(); // Charge les données de véhicule depuis le local storage
-  }
-
-  Future<void> _fetchTypeEntretien() async {
-      final ApiService _apiService = ApiService();
-      final url= _apiService.baseUrl;
-      print(url);
-    final response = await http.get(Uri.parse('$url/typeentretien'));
-
-    if (response.statusCode == 200) {
-      setState(() {
-        _typeEntretien = json.decode(response.body); // Décode la réponse JSON
-      });
-    } else {
-      throw Exception('Erreur lors du chargement des types de entretien');
-    }
+   // Charge les données de véhicule depuis le local storage
   }
 
 
@@ -61,9 +45,11 @@ class _AddentretienPageState extends State<AddentretienPage> {
   TextEditingController _montantController = TextEditingController();
   TextEditingController _vehiculeController = TextEditingController();
   TextEditingController _conducteurController = TextEditingController();
- bool _obscureText = true;
+   TextEditingController _litreController = TextEditingController();
   // Variable pour stocker la date sélectionnée
   DateTime? _selectedDate;
+   final List<String> _typeCarburants = ["Essence", "Diesel","Essence premium","Ethanol","Essence Moyenne"];
+  String? _selectedTypeCarburant;
 
   // Fonction pour afficher le sélecteur de date
   Future<void> _selectDate(BuildContext context) async {
@@ -104,7 +90,7 @@ class _AddentretienPageState extends State<AddentretienPage> {
         final ApiService _apiService = ApiService();
       final url= _apiService.baseUrl;
       print(url);
-      var uri = Uri.parse("$url/storeEntetien");
+      var uri = Uri.parse("$url/storeCarburant");
 
       var request = http.MultipartRequest("POST", uri);
 
@@ -113,10 +99,11 @@ class _AddentretienPageState extends State<AddentretienPage> {
       request.fields['montant'] = _montantController.text;
       request.fields['vehicule'] = _vehiculeController.text;
       request.fields['conducteur'] = _conducteurController.text;
-       if (_selectedTypeentretien != null) {
-      request.fields['typeEntretien'] = _selectedTypeentretien!; // ID du type de Entretien      request.fields['typeEntretien'] = _selectedTypeentretien!; // ID du type de Entretien
-    }
-
+      request.fields['litre'] = _litreController.text;
+         // Envoyer le type de carburant sélectionné
+      if (_selectedTypeCarburant != null) {
+        request.fields['TypeCarburant'] = _selectedTypeCarburant!; // ID ou nom du type de carburant
+      }
 
       // Attach the image if selected
       if (_image != null) {
@@ -130,9 +117,9 @@ class _AddentretienPageState extends State<AddentretienPage> {
           Navigator.push(
         context, new MaterialPageRoute(builder: (context) => Spincircle()));
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Entretien ajoutée avec succès !"),
+      content: Text("Carburant ajoutée avec succès "),
     ));
-        print("Entretien ajoutée avec succès !");
+        print("Carburant ajoutée avec succès !");
       } else {
         print("Erreur : ${response.statusCode}");
       }
@@ -143,7 +130,7 @@ class _AddentretienPageState extends State<AddentretienPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ajouter Entretien'),
+        title: Text('Ajouter Carburant'),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -169,22 +156,22 @@ class _AddentretienPageState extends State<AddentretienPage> {
                 readOnly: true, // Empêche l'utilisateur de taper directement
               ),
                DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Type de Entretien'),
-                value: _selectedTypeentretien,
-                items: _typeEntretien.map<DropdownMenuItem<String>>((dynamic type) {
+                decoration: InputDecoration(labelText: "Type de Carburant"),
+                value: _selectedTypeCarburant,
+                items: _typeCarburants.map((String type) {
                   return DropdownMenuItem<String>(
-                    value: type['id'].toString(), // Utilise l'ID comme valeur
-                    child: Text(type['name']), // Affiche le nom du type de Entretien                    child: Text(type['name']), // Affiche le nom du type de Entretien
+                    value: type,
+                    child: Text(type),
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
                   setState(() {
-                    _selectedTypeentretien = newValue;
+                    _selectedTypeCarburant = newValue;
                   });
                 },
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez sélectionner un type de Entretien  return ';
+                  if (value == null) {
+                    return 'Veuillez sélectionner un type de carburant';
                   }
                   return null;
                 },
@@ -206,6 +193,17 @@ class _AddentretienPageState extends State<AddentretienPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez entrer le montant';
+                  }
+                  return null;
+                },
+              ),
+               TextFormField(
+                controller: _litreController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'litre'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer le litre';
                   }
                   return null;
                 },

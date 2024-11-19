@@ -1,7 +1,7 @@
-import 'package:carhabty/pagesRapports/entretienrapport.dart';
-import 'package:carhabty/pagesRapports/carburantRapport.dart';
-import 'package:carhabty/pagesRapports/Generale.dart';
-import 'package:carhabty/pagesRapports/depenserapport.dart';
+import 'package:carhabty/rapports/pagesRapports/entretienrapport.dart';
+import 'package:carhabty/rapports/pagesRapports/carburantRapport.dart';
+import 'package:carhabty/rapports/pagesRapports/Generale.dart';
+import 'package:carhabty/rapports/pagesRapports/depenserapport.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

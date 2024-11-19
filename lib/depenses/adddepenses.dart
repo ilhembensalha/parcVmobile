@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:carhabty/home.dart';
+import 'package:carhabty/Spincircle.dart';
 import 'package:carhabty/service/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,19 +8,35 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AddCarburantPage extends StatefulWidget {
+class AddExpensePage extends StatefulWidget {
   @override
-  _AddCarburantPageState createState() => _AddCarburantPageState();
+  _AddExpensePageState createState() => _AddExpensePageState();
 }
 
-class _AddCarburantPageState extends State<AddCarburantPage> {
+class _AddExpensePageState extends State<AddExpensePage> {
   final _formKey = GlobalKey<FormState>();
-
+    List<dynamic> _typeDepenses = [];
+  String? _selectedTypeDepense;
 @override
   void initState() {
     super.initState();
     _loadVehicle(); 
-   // Charge les données de véhicule depuis le local storage
+    _fetchTypeDepenses(); // Charge les données de véhicule depuis le local storage
+  }
+
+  Future<void> _fetchTypeDepenses() async {
+      final ApiService _apiService = ApiService();
+      final url= _apiService.baseUrl;
+      print(url);
+    final response = await http.get(Uri.parse('$url/typedepense'));
+
+    if (response.statusCode == 200) {
+      setState(() {
+        _typeDepenses = json.decode(response.body); // Décode la réponse JSON
+      });
+    } else {
+      throw Exception('Erreur lors du chargement des types de dépense');
+    }
   }
 
 
@@ -45,11 +61,9 @@ class _AddCarburantPageState extends State<AddCarburantPage> {
   TextEditingController _montantController = TextEditingController();
   TextEditingController _vehiculeController = TextEditingController();
   TextEditingController _conducteurController = TextEditingController();
-   TextEditingController _litreController = TextEditingController();
+ bool _obscureText = true;
   // Variable pour stocker la date sélectionnée
   DateTime? _selectedDate;
-   final List<String> _typeCarburants = ["Essence", "Diesel","Essence premium","Ethanol","Essence Moyenne"];
-  String? _selectedTypeCarburant;
 
   // Fonction pour afficher le sélecteur de date
   Future<void> _selectDate(BuildContext context) async {
@@ -86,11 +100,11 @@ class _AddCarburantPageState extends State<AddCarburantPage> {
 
   // Function to send the form data to Laravel API
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-        final ApiService _apiService = ApiService();
+      final ApiService _apiService = ApiService();
       final url= _apiService.baseUrl;
       print(url);
-      var uri = Uri.parse("$url/storeCarburant");
+    if (_formKey.currentState!.validate()) {
+      var uri = Uri.parse("$url/store");
 
       var request = http.MultipartRequest("POST", uri);
 
@@ -99,11 +113,10 @@ class _AddCarburantPageState extends State<AddCarburantPage> {
       request.fields['montant'] = _montantController.text;
       request.fields['vehicule'] = _vehiculeController.text;
       request.fields['conducteur'] = _conducteurController.text;
-      request.fields['litre'] = _litreController.text;
-         // Envoyer le type de carburant sélectionné
-      if (_selectedTypeCarburant != null) {
-        request.fields['TypeCarburant'] = _selectedTypeCarburant!; // ID ou nom du type de carburant
-      }
+       if (_selectedTypeDepense != null) {
+      request.fields['typeDepense'] = _selectedTypeDepense!; // ID du type de dépense
+    }
+
 
       // Attach the image if selected
       if (_image != null) {
@@ -114,12 +127,12 @@ class _AddCarburantPageState extends State<AddCarburantPage> {
       var response = await request.send();
 
       if (response.statusCode == 201) {
+        print("Dépense ajoutée avec succès !");
           Navigator.push(
         context, new MaterialPageRoute(builder: (context) => Spincircle()));
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Carburant ajoutée avec succès "),
+      content: Text("Dépense ajoutée avec succès !"),
     ));
-        print("Carburant ajoutée avec succès !");
       } else {
         print("Erreur : ${response.statusCode}");
       }
@@ -130,7 +143,7 @@ class _AddCarburantPageState extends State<AddCarburantPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ajouter Carburant'),
+        title: Text('Ajouter Dépense'),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -156,22 +169,22 @@ class _AddCarburantPageState extends State<AddCarburantPage> {
                 readOnly: true, // Empêche l'utilisateur de taper directement
               ),
                DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: "Type de Carburant"),
-                value: _selectedTypeCarburant,
-                items: _typeCarburants.map((String type) {
+                decoration: InputDecoration(labelText: 'Type de dépense'),
+                value: _selectedTypeDepense,
+                items: _typeDepenses.map<DropdownMenuItem<String>>((dynamic type) {
                   return DropdownMenuItem<String>(
-                    value: type,
-                    child: Text(type),
+                    value: type['id'].toString(), // Utilise l'ID comme valeur
+                    child: Text(type['name']), // Affiche le nom du type de dépense
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
                   setState(() {
-                    _selectedTypeCarburant = newValue;
+                    _selectedTypeDepense = newValue;
                   });
                 },
                 validator: (value) {
-                  if (value == null) {
-                    return 'Veuillez sélectionner un type de carburant';
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez sélectionner un type de dépense';
                   }
                   return null;
                 },
@@ -193,17 +206,6 @@ class _AddCarburantPageState extends State<AddCarburantPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez entrer le montant';
-                  }
-                  return null;
-                },
-              ),
-               TextFormField(
-                controller: _litreController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'litre'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer le litre';
                   }
                   return null;
                 },

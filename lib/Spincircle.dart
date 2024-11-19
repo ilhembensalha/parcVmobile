@@ -1,20 +1,20 @@
 import 'dart:convert';
 
-import 'package:carhabty/ProfilePage.dart';
-import 'package:carhabty/TyoeDepense/depense.dart';
+import 'package:carhabty/profile/ProfilePage.dart';
+import 'package:carhabty/TypeDepense/depense.dart';
 import 'package:carhabty/TypeEntretien/entretien.dart';
-import 'package:carhabty/addCarburant.dart';
-import 'package:carhabty/addEntretien.dart';
-import 'package:carhabty/addRappel.dart';
-import 'package:carhabty/adddepenses.dart';
-import 'package:carhabty/auth_screens.dart';
+import 'package:carhabty/carburants/addCarburant.dart';
+import 'package:carhabty/entretien/addEntretien.dart';
+import 'package:carhabty/rapples/addRappel.dart';
+import 'package:carhabty/depenses/adddepenses.dart';
+import 'package:carhabty/auth/auth_screens.dart';
 import 'package:carhabty/maps/maps.dart';
 import 'package:carhabty/service/api_service.dart';
 import 'package:carhabty/vehicule/vehicule.dart';
 import 'package:flutter/material.dart';
-import 'package:carhabty/pages/tabbarRapport.dart';
+import 'package:carhabty/rapports/tabbarRapport.dart';
 import 'package:carhabty/pages/home.dart';
-import 'package:carhabty/pages/message.dart';
+import 'package:carhabty/rapples/rappel.dart';
 import 'package:spincircle_bottom_bar/modals.dart';
 import 'package:spincircle_bottom_bar/spincircle_bottom_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -90,7 +90,7 @@ class _SpincircleState extends State<Spincircle> {
   List<Widget> pages = [
     Home(), // Page Home
     Add(),  // Page Add
-Message(),
+MessagePage(),
 MapsPage(),
   ];
   @override

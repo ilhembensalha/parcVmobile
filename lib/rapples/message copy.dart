@@ -1,5 +1,5 @@
-import 'package:carhabty/EditRappelPage.dart';
-import 'package:carhabty/DetailRappelPage.dart';
+import 'package:carhabty/rapples/EditRappelPage.dart';
+import 'package:carhabty/rapples/DetailRappelPage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';

@@ -1,10 +1,10 @@
-import 'package:carhabty/forgetPasword.dart';
+import 'package:carhabty/auth/forgetPasword.dart';
 import 'package:flutter/material.dart';
-import 'package:carhabty/home.dart';
+import 'package:carhabty/Spincircle.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'service/api_service.dart';
+import '../service/api_service.dart';
 import 'dart:convert'; // Pour convertir le mot de passe en bytes
 import 'package:crypto/crypto.dart'; // Pour le hachage
 import 'package:encrypt/encrypt.dart' as encrypt; // Utiliser un alias pour 'encrypt'
